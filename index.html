@@ -1247,11 +1247,14 @@
     dates.forEach((date, i) => {
       const log = allLogs[date];
       if (!log || !log.workout_done) return;
-      const type = log.day_type;
-      const group = SESSION_GROUPS[type];
-      if (!group) return;
-      const key = group.group || type;
-      completed[key] = (completed[key] || 0) + 1;
+      // day_type can be comma-separated
+      const types = (log.day_type || '').split(',').map(s => s.trim());
+      types.forEach(type => {
+        const group = SESSION_GROUPS[type];
+        if (!group) return;
+        const key = group.group || type;
+        completed[key] = (completed[key] || 0) + 1;
+      });
     });
 
     // Render
@@ -1369,25 +1372,60 @@
       const btn = document.createElement('button');
       btn.className = 'pill'; btn.textContent = type;
       btn.addEventListener('click', () => {
-        selectPill(type);
-        // Show/hide run stats card based on selected pill
-        const runCard = document.getElementById('run-stats-card');
-        if (type === 'Run Day' || type === 'Long Run') { runCard.style.display = ''; }
-        else {
-          const dayActivities = defaultDayType(currentDate);
-          const arr = Array.isArray(dayActivities) ? dayActivities : [dayActivities];
-          if (!arr.some(a => a === 'Run Day' || a === 'Long Run')) runCard.style.display = 'none';
-        }
+        togglePill(type);
+        updateTargetsFromSelected();
+        updateRunStatsVisibility();
         scheduleSave();
       });
       container.appendChild(btn);
     });
   }
-  function selectPill(type) {
-    document.querySelectorAll('.pill').forEach(p => p.classList.toggle('active', p.textContent === type));
-    updateTargets(type);
+  function togglePill(type) {
+    // If clicking Rest, deselect everything else and select only Rest
+    if (type === 'Rest') {
+      document.querySelectorAll('.pill').forEach(p => p.classList.toggle('active', p.textContent === 'Rest'));
+      return;
+    }
+    // Otherwise toggle this pill and deselect Rest
+    const pill = Array.from(document.querySelectorAll('.pill')).find(p => p.textContent === type);
+    if (pill) pill.classList.toggle('active');
+    const restPill = Array.from(document.querySelectorAll('.pill')).find(p => p.textContent === 'Rest');
+    if (restPill) restPill.classList.remove('active');
+    // If nothing selected, select Rest
+    if (!document.querySelector('.pill.active')) {
+      if (restPill) restPill.classList.add('active');
+    }
   }
-  function getSelectedDayType() { const a = document.querySelector('.pill.active'); return a ? a.textContent : getDayTypes()[0]; }
+  function selectPills(types) {
+    const arr = Array.isArray(types) ? types : [types];
+    document.querySelectorAll('.pill').forEach(p => p.classList.toggle('active', arr.includes(p.textContent)));
+  }
+  function getSelectedDayTypes() {
+    return Array.from(document.querySelectorAll('.pill.active')).map(p => p.textContent);
+  }
+  function getSelectedDayType() {
+    // Primary activity = first selected (used for day_type in DB)
+    const selected = getSelectedDayTypes();
+    return selected[0] || getDayTypes()[0];
+  }
+  function updateRunStatsVisibility() {
+    const runCard = document.getElementById('run-stats-card');
+    if (!runCard) return;
+    const selected = getSelectedDayTypes();
+    runCard.style.display = selected.some(a => a === 'Run Day' || a === 'Long Run') ? '' : 'none';
+  }
+  function updateTargetsFromSelected() {
+    // Use the highest-calorie selected activity for targets
+    const selected = getSelectedDayTypes();
+    const targets = getTargets();
+    let best = selected[0] || getDayTypes()[0];
+    let bestCal = 0;
+    selected.forEach(type => {
+      const t = targets[type];
+      if (t && t.cal > bestCal) { bestCal = t.cal; best = type; }
+    });
+    updateTargets(best);
+  }
 
   function updateTargets(dayType) {
     const t = getTargets()[dayType] || { cal: 0, protein: 0, water: 0 };
@@ -1402,9 +1440,16 @@
   // ==========================================
   function loadDay(dateStr) {
     const log = allLogs[dateStr];
-    const dayActivities = defaultDayType(dateStr); // array
-    const primaryActivity = log ? log.day_type : (Array.isArray(dayActivities) ? dayActivities[0] : dayActivities);
-    selectPill(primaryActivity);
+    const dayActivities = defaultDayType(dateStr); // array from schedule
+    if (log && log.day_type) {
+      // day_type can be comma-separated for multi-select
+      selectPills(log.day_type.split(',').map(s => s.trim()));
+    } else {
+      const arr = Array.isArray(dayActivities) ? dayActivities : [dayActivities];
+      selectPills(arr);
+    }
+    updateTargetsFromSelected();
+    updateRunStatsVisibility();
     document.getElementById('input-cal').value = log?.cal ?? '';
     document.getElementById('input-protein').value = log?.protein ?? '';
     document.getElementById('input-water').value = log?.water ?? '';
@@ -1566,7 +1611,7 @@
       protein: parseInt(document.getElementById('input-protein').value) || 0,
       water: parseInt(document.getElementById('input-water').value) || 0,
       weight: weightVal,
-      day_type: getSelectedDayType(),
+      day_type: getSelectedDayTypes().join(', '),
       workout_done: workoutDone,
       notes: document.getElementById('input-notes').value || null,
       screen_time: screenTimeVal,
@@ -1651,7 +1696,13 @@
   //  HISTORY
   // ==========================================
   function calcScore(log) {
-    const t = getTargets()[log.day_type] || getTargets()[getDayTypes()[0]];
+    // Use highest-calorie activity type for scoring
+    const types = (log.day_type || '').split(',').map(s => s.trim());
+    const targets = getTargets();
+    let best = types[0] || getDayTypes()[0];
+    let bestCal = 0;
+    types.forEach(type => { const tt = targets[type]; if (tt && tt.cal > bestCal) { bestCal = tt.cal; best = type; } });
+    const t = targets[best] || targets[getDayTypes()[0]];
     const calPct = t.cal ? Math.min(1, log.cal / t.cal) : 0;
     const proteinPct = t.protein ? Math.min(1, log.protein / t.protein) : 0;
     const workoutPct = log.workout_done ? 1 : 0;
