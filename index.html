@@ -2107,6 +2107,10 @@
   }
 
   function closeTheDay() {
+    const selected = getSelectedDayTypes();
+    if (selected.length === 0) {
+      if (!confirm('No activities selected. Would you still like to close the day?')) return;
+    }
     dayClosed = true;
     saveDay();
     renderCloseDayButton();
