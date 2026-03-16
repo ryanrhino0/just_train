@@ -277,6 +277,64 @@
     .run-stats-row input:focus { border-color: var(--orange); }
     .run-calories-result { font-family: 'DM Mono', monospace; font-size: 36px; font-weight: 500; color: var(--orange); text-align: center; padding: 12px 0 4px; }
     .run-calories-label { font-size: 12px; color: var(--muted); text-align: center; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Celebration Overlay */
+    .celebration-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 200;
+      overflow-y: auto;
+      padding: var(--safe-top) 16px calc(var(--safe-bottom) + 24px);
+    }
+    .celebration-overlay.active { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 60px; }
+    .celebration-content { max-width: 480px; width: 100%; text-align: center; }
+    .celebration-check {
+      width: 80px; height: 80px; border-radius: 50%; background: var(--green);
+      color: #000; font-size: 40px; font-weight: 700; display: flex; align-items: center;
+      justify-content: center; margin: 0 auto 16px; animation: celebratePop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes celebratePop {
+      0% { transform: scale(0); opacity: 0; }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .celebration-text {
+      font-family: 'DM Mono', monospace; font-size: 24px; font-weight: 500;
+      color: #fff; margin-bottom: 32px; animation: fadeIn 0.5s ease 0.3s both;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Confetti */
+    .confetti-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 201; overflow: hidden; }
+    .confetti-piece {
+      position: absolute; width: 10px; height: 10px; top: -10px;
+      animation: confettiFall 3s ease-in forwards;
+    }
+    @keyframes confettiFall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* Calendar */
+    .celebration-calendar { animation: fadeIn 0.5s ease 0.5s both; }
+    .cal-month-title { font-family: 'DM Mono', monospace; font-size: 16px; color: #fff; margin-bottom: 12px; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .cal-header { font-size: 11px; color: var(--muted); text-align: center; padding: 4px; text-transform: uppercase; }
+    .cal-day {
+      aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+      border-radius: 8px; font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted);
+      position: relative;
+    }
+    .cal-day.today { color: #fff; background: var(--surface); border: 1px solid var(--orange); }
+    .cal-day.has-log { color: #fff; }
+    .cal-day .cal-stamp {
+      position: absolute; top: -2px; right: -2px; width: 14px; height: 14px;
+      background: var(--green); border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-size: 8px; color: #000; font-weight: 700;
+    }
+    .cal-day.empty { visibility: hidden; }
   </style>
 </head>
 <body>
@@ -328,6 +386,12 @@
         <button class="pill" data-goal="gym_pr" onclick="toggleGoalPill(this)">Gym PR</button>
         <button class="pill" data-goal="other" onclick="toggleGoalPill(this)">Other</button>
       </div>
+    </div>
+    <div class="ob-field">
+      <label class="ob-label">Your Timezone</label>
+      <select class="ob-select" id="ob-timezone">
+        <!-- populated by JS -->
+      </select>
     </div>
     <div class="ob-field">
       <label class="ob-label">Optional Tracking</label>
@@ -531,6 +595,7 @@
         <div class="target-item"><div class="target-val" id="target-water">--</div><div class="target-lbl">Water (oz)</div></div>
       </div>
     </div>
+    <div id="close-day-area" style="margin-top:8px;margin-bottom:24px"></div>
   </div>
 
   <!-- Plan Tab -->
@@ -541,6 +606,16 @@
   <!-- History Tab -->
   <div class="tab-content" id="tab-history">
     <div class="history-list" id="history-list"></div>
+  </div>
+</div>
+
+<!-- Celebration -->
+<div class="celebration-overlay" id="celebration-overlay">
+  <div class="celebration-content">
+    <div class="celebration-check" id="celebration-check">&#10003;</div>
+    <div class="celebration-text" id="celebration-text">Day Complete!</div>
+    <div class="celebration-calendar" id="celebration-calendar"></div>
+    <button class="ob-btn ob-btn-next" onclick="closeCelebration()" style="margin-top:24px;max-width:200px">Done</button>
   </div>
 </div>
 
@@ -587,6 +662,7 @@
   let allLogs = {};
   let currentDate = todayStr();
   let workoutDone = false;
+  let dayClosed = false;
   let saveTimer = null;
   let obStep = 0;
   let pendingEmail = '';
@@ -594,6 +670,11 @@
 
   // --- Helpers ---
   function todayStr() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+  function getUserDate() {
+    const tz = (userSettings && cfg().timezone) ? cfg().timezone : Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const d = new Date().toLocaleDateString('en-CA', { timeZone: tz }); // en-CA gives YYYY-MM-DD
+    return d;
+  }
   function formatDate(str) { const [y, m, d] = str.split('-'); return `${m}/${d}/${y}`; }
   function dayOfWeek(dateStr) { return new Date(dateStr + 'T12:00:00').getDay(); }
 
@@ -736,6 +817,7 @@
     const { data: settings } = await db.from('settings').select('*').eq('user_id', currentUser.id).single();
     if (!settings) { startOnboarding(); return; }
     userSettings = settings;
+    currentDate = getUserDate();
     allLogs = {};
     const { data: logs } = await db.from('logs').select('*').eq('user_id', currentUser.id);
     if (logs) logs.forEach(row => { allLogs[row.date] = row; });
@@ -809,6 +891,16 @@
     document.querySelectorAll('#ob-goal-pills .pill').forEach(p => p.classList.remove('active'));
     const stCheck = document.getElementById('ob-screen-time-check');
     if (stCheck) { stCheck.classList.remove('checked'); stCheck.innerHTML = ''; }
+    // Populate timezone select
+    const tzSelect = document.getElementById('ob-timezone');
+    const detected = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const commonTz = [
+      'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles',
+      'America/Phoenix', 'America/Anchorage', 'Pacific/Honolulu', 'Europe/London',
+      'Europe/Paris', 'Asia/Tokyo', 'Australia/Sydney'
+    ];
+    const allTz = commonTz.includes(detected) ? commonTz : [detected, ...commonTz];
+    tzSelect.innerHTML = allTz.map(tz => `<option value="${tz}" ${tz === detected ? 'selected' : ''}>${tz.replace(/_/g, ' ')}</option>`).join('');
     updateGoalDetailsVisibility();
   }
 
@@ -1032,12 +1124,14 @@
       };
     });
 
-    const config = { name, goals, race_date: raceDate, event_name: eventName, start_weight: startWeight, goal_weight: goalWeight, weighin_day: weighinDay, pr_goal: prGoal, other_goal: otherGoal, week_schedule: schedule, targets, running_plan: generatedPlan, track_screen_time: obTrackScreenTime };
+    const timezone = document.getElementById('ob-timezone').value;
+    const config = { name, goals, race_date: raceDate, event_name: eventName, start_weight: startWeight, goal_weight: goalWeight, weighin_day: weighinDay, pr_goal: prGoal, other_goal: otherGoal, week_schedule: schedule, targets, running_plan: generatedPlan, track_screen_time: obTrackScreenTime, timezone };
 
     const { error } = await db.from('settings').upsert({ user_id: currentUser.id, config }, { onConflict: 'user_id' });
     if (error) { console.error('Settings save error:', error); return; }
 
     userSettings = { user_id: currentUser.id, config };
+    currentDate = getUserDate();
     allLogs = {};
     hideAll();
     document.getElementById('app').style.display = 'block';
@@ -1094,7 +1188,7 @@
   function renderSessionTracker() {
     const container = document.getElementById('session-tracker');
     const schedule = getSchedule();
-    const ws = weekStart(todayStr());
+    const ws = weekStart(getUserDate());
     const dates = weekDates(ws);
 
     // Count scheduled sessions by group
@@ -1158,13 +1252,12 @@
     const area = document.getElementById('weighin-area');
     const goals = cfg().goals || [];
     if (!goals.includes('weight_loss')) { area.innerHTML = ''; return; }
-    const today = new Date();
-    const todayDay = today.getDay();
+    const todayDay = dayOfWeek(getUserDate());
     const weighDay = getWeighInDay();
     const isWeighDay = todayDay === weighDay;
 
     // Check if already weighed in this week
-    const ws = weekStart(todayStr());
+    const ws = weekStart(getUserDate());
     const dates = weekDates(ws);
     const weighInDate = dates[weighDay];
     const existingLog = allLogs[weighInDate];
@@ -1280,6 +1373,7 @@
     document.getElementById('input-water').value = log?.water ?? '';
     document.getElementById('input-notes').value = log?.notes ?? '';
     workoutDone = log?.workout_done ?? false;
+    dayClosed = log?.day_closed ?? false;
     updateWorkoutUI();
     updateProgressBars();
 
@@ -1306,6 +1400,8 @@
     } else {
       runCard.style.display = 'none';
     }
+
+    renderCloseDayButton();
   }
 
   // ==========================================
@@ -1441,6 +1537,7 @@
       run_distance: runDist,
       run_duration: runDur,
       run_calories: runCals,
+      day_closed: dayClosed,
     };
 
     const { error } = await db.from('logs').upsert(row, { onConflict: 'user_id,date' });
@@ -1624,6 +1721,97 @@
     await db.auth.signOut();
     currentUser = null; userSettings = null; allLogs = {};
     showAuth();
+  }
+
+  // ==========================================
+  //  CLOSE THE DAY
+  // ==========================================
+  function renderCloseDayButton() {
+    const area = document.getElementById('close-day-area');
+    if (!area) return;
+    if (dayClosed) {
+      area.innerHTML = '<div style="text-align:center;padding:16px;color:var(--green);font-size:14px;font-weight:600">&#10003; Day logged and closed</div>';
+    } else {
+      area.innerHTML = `<button id="close-day-btn" onclick="closeTheDay()" style="
+        width:100%; padding:20px; border-radius:16px; border:2px solid var(--green);
+        background:rgba(34,197,94,0.1); color:var(--green); font-family:'DM Sans',sans-serif;
+        font-size:18px; font-weight:700; cursor:pointer; display:flex; align-items:center;
+        justify-content:center; gap:10px; transition:all 0.2s;
+      "><span style="font-size:28px">&#10003;</span> Close the Day</button>`;
+    }
+  }
+
+  function closeTheDay() {
+    dayClosed = true;
+    saveDay();
+    renderCloseDayButton();
+    // Show celebration
+    document.getElementById('celebration-overlay').classList.add('active');
+    launchConfetti();
+    renderCelebrationCalendar();
+  }
+
+  function renderCelebrationCalendar() {
+    const container = document.getElementById('celebration-calendar');
+    const d = new Date(currentDate + 'T12:00:00');
+    const year = d.getFullYear();
+    const month = d.getMonth();
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const todayDate = getUserDate();
+
+    let html = `<div class="cal-month-title">${monthNames[month]} ${year}</div>`;
+    html += '<div class="cal-grid">';
+    ['S','M','T','W','T','F','S'].forEach(h => { html += `<div class="cal-header">${h}</div>`; });
+
+    // Empty cells before first day
+    for (let i = 0; i < firstDay; i++) html += '<div class="cal-day empty"></div>';
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+      const log = allLogs[dateStr];
+      const isComplete = log && (log.day_closed === true || log.workout_done === true || (log.cal && log.cal > 0));
+      const isToday = dateStr === todayDate;
+      let classes = 'cal-day';
+      if (isToday) classes += ' today';
+      if (isComplete) classes += ' has-log';
+
+      html += `<div class="${classes}">${day}${isComplete ? '<div class="cal-stamp">&#10003;</div>' : ''}</div>`;
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+  }
+
+  function launchConfetti() {
+    const container = document.createElement('div');
+    container.className = 'confetti-container';
+    container.id = 'confetti-container';
+    document.body.appendChild(container);
+
+    const colors = ['var(--orange)', 'var(--green)', 'var(--cyan)', 'var(--indigo)', 'var(--amber)'];
+    for (let i = 0; i < 30; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      const size = 8 + Math.random() * 6;
+      piece.style.width = size + 'px';
+      piece.style.height = size + 'px';
+      piece.style.left = Math.random() * 100 + '%';
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.animationDelay = Math.random() * 1 + 's';
+      piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      container.appendChild(piece);
+    }
+
+    setTimeout(() => { const c = document.getElementById('confetti-container'); if (c) c.remove(); }, 3500);
+  }
+
+  function closeCelebration() {
+    document.getElementById('celebration-overlay').classList.remove('active');
+    const c = document.getElementById('confetti-container');
+    if (c) c.remove();
   }
 
   setupCodeInputs();
