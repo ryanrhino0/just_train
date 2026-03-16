@@ -601,7 +601,7 @@
         <span class="card-title">Run Calories</span>
         <span class="card-badge" id="run-budget-badge">+0 kcal to budget</span>
       </div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:12px">How many calories did your run burn? (check your watch or app)</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:12px">How many calories did your run burn? (from Strava, Apple Watch, Garmin, etc.)</div>
       <div class="input-row">
         <input type="number" id="input-run-calories" placeholder="0" inputmode="numeric">
         <span class="input-unit">kcal burned</span>
@@ -1420,8 +1420,8 @@
   const ACTIVITY_BURN = {
     'Rest': 0,
     'Gym Lift': 300,
-    'Run Day': 400,
-    'Long Run': 600,  // default estimate, overridden by actual run calc
+    'Run Day': 0,     // user enters actual burn from watch/Strava
+    'Long Run': 0,    // user enters actual burn from watch/Strava
     'Climb': 300,
     'Pilates': 250,
     'Yoga': 200,
