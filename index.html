@@ -80,6 +80,8 @@
     .ob-input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: #fff; font-family: 'DM Mono', monospace; font-size: 18px; padding: 14px; outline: none; }
     .ob-input:focus { border-color: var(--orange); }
     .ob-input::placeholder { color: var(--muted); }
+    .ob-input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+    .ob-input[type="date"] { cursor: pointer; }
     .ob-select { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 16px; padding: 14px; outline: none; appearance: none; -webkit-appearance: none; }
     .ob-schedule-grid { display: flex; flex-direction: column; gap: 8px; }
     .ob-day-row { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; }
@@ -292,34 +294,60 @@
 <div class="app onboarding" id="onboarding">
   <div style="padding-top:24px"><div class="ob-step-dots" id="ob-dots"></div></div>
 
-  <!-- Step 1: Name & Goal -->
+  <!-- Step 1: Name & Goal Type -->
   <div class="ob-screen active" data-step="0">
     <div class="ob-title">Let's set up</div>
-    <div class="ob-subtitle">Your name and what you're working toward.</div>
+    <div class="ob-subtitle">Your name and what you're working toward. Pick one or more goals.</div>
     <div class="ob-field"><label class="ob-label">Your Name</label><input class="ob-input" id="ob-name" type="text" placeholder="e.g. Ryan"></div>
-    <div class="ob-field"><label class="ob-label">Goal Event / Race Date</label><input class="ob-input" id="ob-race-date" type="date"></div>
-    <div class="ob-field"><label class="ob-label">What's the event? (optional)</label><input class="ob-input" id="ob-event-name" type="text" placeholder="e.g. Half Marathon"></div>
+    <div class="ob-field">
+      <label class="ob-label">What are your goals?</label>
+      <div class="day-pills" id="ob-goal-pills" style="margin-bottom:0">
+        <button class="pill" data-goal="weight_loss" onclick="toggleGoalPill(this)">Weight Loss</button>
+        <button class="pill" data-goal="event" onclick="toggleGoalPill(this)">Event / Race</button>
+        <button class="pill" data-goal="gym_pr" onclick="toggleGoalPill(this)">Gym PR</button>
+        <button class="pill" data-goal="other" onclick="toggleGoalPill(this)">Other</button>
+      </div>
+    </div>
     <div class="ob-nav"><button class="ob-btn ob-btn-next" onclick="obNext()">Next</button></div>
   </div>
 
-  <!-- Step 2: Weight & Weigh-In Day -->
+  <!-- Step 2: Goal Details (dynamic) -->
   <div class="ob-screen" data-step="1">
-    <div class="ob-title">Weight Goals</div>
-    <div class="ob-subtitle">Where you're starting and where you want to be.</div>
-    <div class="ob-field"><label class="ob-label">Current Weight (lbs)</label><input class="ob-input" id="ob-start-weight" type="number" inputmode="decimal" placeholder="200"></div>
-    <div class="ob-field"><label class="ob-label">Goal Weight (lbs)</label><input class="ob-input" id="ob-goal-weight" type="number" inputmode="decimal" placeholder="180"></div>
-    <div class="ob-field">
-      <label class="ob-label">Weekly Weigh-In Day</label>
-      <select class="ob-select" id="ob-weighin-day">
-        <option value="0">Sunday</option>
-        <option value="1" selected>Monday</option>
-        <option value="2">Tuesday</option>
-        <option value="3">Wednesday</option>
-        <option value="4">Thursday</option>
-        <option value="5">Friday</option>
-        <option value="6">Saturday</option>
-      </select>
+    <div class="ob-title">Goal Details</div>
+    <div class="ob-subtitle">Tell us more about what you're going after.</div>
+
+    <div id="ob-goal-weight-section" style="display:none">
+      <div class="ob-field"><label class="ob-label">Current Weight (lbs)</label><input class="ob-input" id="ob-start-weight" type="number" inputmode="decimal" placeholder="200"></div>
+      <div class="ob-field"><label class="ob-label">Goal Weight (lbs)</label><input class="ob-input" id="ob-goal-weight" type="number" inputmode="decimal" placeholder="180"></div>
+      <div class="ob-field">
+        <label class="ob-label">Weekly Weigh-In Day</label>
+        <select class="ob-select" id="ob-weighin-day">
+          <option value="0">Sunday</option>
+          <option value="1" selected>Monday</option>
+          <option value="2">Tuesday</option>
+          <option value="3">Wednesday</option>
+          <option value="4">Thursday</option>
+          <option value="5">Friday</option>
+          <option value="6">Saturday</option>
+        </select>
+      </div>
     </div>
+
+    <div id="ob-goal-event-section" style="display:none">
+      <div class="ob-field"><label class="ob-label">Event Name</label><input class="ob-input" id="ob-event-name" type="text" placeholder="e.g. Half Marathon"></div>
+      <div class="ob-field"><label class="ob-label">Event Date</label><input class="ob-input" id="ob-race-date" type="date"></div>
+    </div>
+
+    <div id="ob-goal-pr-section" style="display:none">
+      <div class="ob-field"><label class="ob-label">What PR are you chasing?</label><textarea class="ob-input" id="ob-pr-goal" style="min-height:80px;resize:vertical;font-family:'DM Sans',sans-serif;font-size:14px" placeholder="e.g. 315 lb bench, 500 lb deadlift..."></textarea></div>
+    </div>
+
+    <div id="ob-goal-other-section" style="display:none">
+      <div class="ob-field"><label class="ob-label">What's your goal?</label><textarea class="ob-input" id="ob-other-goal" style="min-height:80px;resize:vertical;font-family:'DM Sans',sans-serif;font-size:14px" placeholder="Describe what you're working toward..."></textarea></div>
+    </div>
+
+    <div id="ob-goal-none-msg" style="color:var(--muted);font-size:14px;padding:20px 0;text-align:center">Go back and select at least one goal.</div>
+
     <div class="ob-nav">
       <button class="ob-btn ob-btn-back" onclick="obBack()">Back</button>
       <button class="ob-btn ob-btn-next" onclick="obNext()">Next</button>
@@ -344,7 +372,7 @@
     <div class="ob-targets-grid" id="ob-targets"></div>
     <div class="ob-nav">
       <button class="ob-btn ob-btn-back" onclick="obBack()">Back</button>
-      <button class="ob-btn ob-btn-next" onclick="obNext()">Next</button>
+      <button class="ob-btn ob-btn-next" id="ob-targets-next" onclick="obTargetsNext()">Next</button>
     </div>
   </div>
 
@@ -649,20 +677,56 @@
   // ==========================================
   //  ONBOARDING
   // ==========================================
+  let selectedGoals = new Set();
+
+  function toggleGoalPill(el) {
+    const goal = el.dataset.goal;
+    if (selectedGoals.has(goal)) { selectedGoals.delete(goal); el.classList.remove('active'); }
+    else { selectedGoals.add(goal); el.classList.add('active'); }
+  }
+
+  function updateGoalDetailsVisibility() {
+    document.getElementById('ob-goal-weight-section').style.display = selectedGoals.has('weight_loss') ? 'block' : 'none';
+    document.getElementById('ob-goal-event-section').style.display = selectedGoals.has('event') ? 'block' : 'none';
+    document.getElementById('ob-goal-pr-section').style.display = selectedGoals.has('gym_pr') ? 'block' : 'none';
+    document.getElementById('ob-goal-other-section').style.display = selectedGoals.has('other') ? 'block' : 'none';
+    document.getElementById('ob-goal-none-msg').style.display = selectedGoals.size === 0 ? 'block' : 'none';
+  }
+
+  function hasRunDays() {
+    for (let i = 0; i < 7; i++) {
+      const sel = document.querySelector(`.ob-day-select[data-day="${i}"]`);
+      if (sel && (sel.value === 'Run Day' || sel.value === 'Long Run')) return true;
+    }
+    return false;
+  }
+
+  function getObSteps() {
+    // Steps: 0=Name+Goals, 1=Goal Details, 2=Schedule, 3=Targets, 4=Running Plan (conditional)
+    const steps = [0, 1, 2, 3];
+    if (hasRunDays() && selectedGoals.has('event')) steps.push(4);
+    return steps;
+  }
+
   function startOnboarding() {
     hideAll(); obStep = 0; generatedPlan = null;
+    selectedGoals = new Set();
     document.getElementById('onboarding').classList.add('active');
     buildObDots(); buildObSchedule(); buildObTargets(); showObStep(0);
-    document.getElementById('ob-race-date').value = '';
     document.getElementById('ob-name').value = '';
-    document.getElementById('ob-event-name').value = '';
     document.getElementById('ob-start-weight').value = '';
     document.getElementById('ob-goal-weight').value = '';
+    document.getElementById('ob-race-date').value = '';
+    document.getElementById('ob-event-name').value = '';
+    document.getElementById('ob-pr-goal').value = '';
+    document.getElementById('ob-other-goal').value = '';
     document.getElementById('ob-mileage').value = '';
     document.getElementById('ob-plan-area').innerHTML = '';
     document.getElementById('ob-finish-btn').disabled = true;
     document.getElementById('ob-gen-btn').disabled = false;
     document.getElementById('ob-gen-btn').textContent = 'Generate My Plan';
+    document.querySelectorAll('#ob-goal-pills .pill').forEach(p => p.classList.remove('active'));
+    updateGoalDetailsVisibility();
   }
 
   function buildObDots() {
@@ -690,10 +754,42 @@
     obStep = step;
     document.querySelectorAll('.ob-screen').forEach(s => s.classList.remove('active'));
     document.querySelector(`.ob-screen[data-step="${step}"]`).classList.add('active');
-    document.querySelectorAll('.ob-dot').forEach((d, i) => { d.className = 'ob-dot' + (i === step ? ' active' : i < step ? ' done' : ''); });
+    if (step === 1) updateGoalDetailsVisibility();
+    // Update dots based on dynamic steps
+    const steps = getObSteps();
+    const c = document.getElementById('ob-dots');
+    c.innerHTML = '';
+    steps.forEach((s, i) => {
+      const d = document.createElement('div');
+      d.className = 'ob-dot' + (s === step ? ' active' : s < step ? ' done' : '');
+      c.appendChild(d);
+    });
+    // Update targets button text based on whether plan step follows
+    const targetsBtn = document.getElementById('ob-targets-next');
+    if (targetsBtn) {
+      targetsBtn.textContent = steps.includes(4) ? 'Next' : 'Start Training';
+    }
   }
-  function obNext() { if (obStep < OB_STEPS - 1) showObStep(obStep + 1); }
-  function obBack() { if (obStep > 0) showObStep(obStep - 1); }
+
+  function obNext() {
+    const steps = getObSteps();
+    const idx = steps.indexOf(obStep);
+    if (idx < steps.length - 1) showObStep(steps[idx + 1]);
+  }
+  function obBack() {
+    const steps = getObSteps();
+    const idx = steps.indexOf(obStep);
+    if (idx > 0) showObStep(steps[idx - 1]);
+  }
+
+  function obTargetsNext() {
+    const steps = getObSteps();
+    if (steps.includes(4)) {
+      obNext(); // go to running plan
+    } else {
+      obFinish(); // no plan step, finish now
+    }
+  }
 
   // --- Generate Running Plan ---
   async function generatePlan() {
@@ -748,11 +844,16 @@
 
   async function obFinish() {
     const name = document.getElementById('ob-name').value.trim() || 'User';
-    const raceDate = document.getElementById('ob-race-date').value || null;
-    const eventName = document.getElementById('ob-event-name').value.trim() || null;
-    const startWeight = parseFloat(document.getElementById('ob-start-weight').value) || 200;
-    const goalWeight = parseFloat(document.getElementById('ob-goal-weight').value) || 180;
-    const weighinDay = parseInt(document.getElementById('ob-weighin-day').value);
+    const goals = Array.from(selectedGoals);
+
+    // Goal-specific fields
+    const raceDate = selectedGoals.has('event') ? (document.getElementById('ob-race-date').value || null) : null;
+    const eventName = selectedGoals.has('event') ? (document.getElementById('ob-event-name').value.trim() || null) : null;
+    const startWeight = selectedGoals.has('weight_loss') ? (parseFloat(document.getElementById('ob-start-weight').value) || null) : null;
+    const goalWeight = selectedGoals.has('weight_loss') ? (parseFloat(document.getElementById('ob-goal-weight').value) || null) : null;
+    const weighinDay = selectedGoals.has('weight_loss') ? parseInt(document.getElementById('ob-weighin-day').value) : null;
+    const prGoal = selectedGoals.has('gym_pr') ? (document.getElementById('ob-pr-goal').value.trim() || null) : null;
+    const otherGoal = selectedGoals.has('other') ? (document.getElementById('ob-other-goal').value.trim() || null) : null;
 
     const schedule = [];
     for (let i = 0; i < 7; i++) schedule.push(document.querySelector(`.ob-day-select[data-day="${i}"]`).value);
@@ -766,7 +867,7 @@
       };
     });
 
-    const config = { name, race_date: raceDate, event_name: eventName, start_weight: startWeight, goal_weight: goalWeight, weighin_day: weighinDay, week_schedule: schedule, targets, running_plan: generatedPlan };
+    const config = { name, goals, race_date: raceDate, event_name: eventName, start_weight: startWeight, goal_weight: goalWeight, weighin_day: weighinDay, pr_goal: prGoal, other_goal: otherGoal, week_schedule: schedule, targets, running_plan: generatedPlan };
 
     const { error } = await db.from('settings').upsert({ user_id: currentUser.id, config }, { onConflict: 'user_id' });
     if (error) { console.error('Settings save error:', error); return; }
@@ -783,10 +884,25 @@
   //  HEADER
   // ==========================================
   function setupHeader() {
-    document.getElementById('header-name').textContent = cfg().name || 'User';
-    const d = daysUntilRace();
-    document.getElementById('countdown-days').textContent = d !== null ? d : '--';
-    document.getElementById('countdown-label').textContent = cfg().event_name ? `days to ${cfg().event_name.toLowerCase()}` : 'days to go';
+    const c = cfg();
+    const goals = c.goals || [];
+    document.getElementById('header-name').textContent = c.name || 'User';
+
+    // Countdown — only if event goal
+    if (goals.includes('event') && c.race_date) {
+      const d = daysUntilRace();
+      document.getElementById('countdown-days').textContent = d !== null ? d : '--';
+      document.getElementById('countdown-label').textContent = c.event_name ? `days to ${c.event_name.toLowerCase()}` : 'days to go';
+      document.querySelector('.countdown').style.display = '';
+    } else {
+      document.querySelector('.countdown').style.display = 'none';
+    }
+
+    // Stats bar — show weight stats only if weight_loss goal
+    const hasWeightGoal = goals.includes('weight_loss');
+    document.getElementById('stat-weight').parentElement.style.display = hasWeightGoal ? '' : 'none';
+    document.getElementById('stat-lost').parentElement.style.display = hasWeightGoal ? '' : 'none';
+    document.getElementById('stat-togo').parentElement.style.display = hasWeightGoal ? '' : 'none';
   }
 
   // ==========================================
@@ -872,6 +988,8 @@
   // ==========================================
   function renderWeighIn() {
     const area = document.getElementById('weighin-area');
+    const goals = cfg().goals || [];
+    if (!goals.includes('weight_loss')) { area.innerHTML = ''; return; }
     const today = new Date();
     const todayDay = today.getDay();
     const weighDay = getWeighInDay();
@@ -1163,7 +1281,8 @@
   // ==========================================
   function openSettings() {
     const c = cfg();
-    document.getElementById('settings-body').innerHTML = `
+    const goals = c.goals || [];
+    let html = `
       <div class="settings-section">
         <div class="settings-section-title">Account</div>
         <div class="settings-row"><span class="settings-row-label">Email</span><span class="settings-row-value">${currentUser.email}</span></div>
@@ -1171,15 +1290,32 @@
       <div class="settings-section">
         <div class="settings-section-title">Profile</div>
         <div class="settings-row"><span class="settings-row-label">Name</span><span class="settings-row-value">${c.name || '--'}</span></div>
+        <div class="settings-row"><span class="settings-row-label">Goals</span><span class="settings-row-value">${goals.map(g => g.replace('_', ' ')).join(', ') || '--'}</span></div>`;
+
+    if (goals.includes('event')) {
+      html += `
         <div class="settings-row"><span class="settings-row-label">Event</span><span class="settings-row-value">${c.event_name || '--'}</span></div>
-        <div class="settings-row"><span class="settings-row-label">Race Date</span><span class="settings-row-value">${c.race_date ? formatDate(c.race_date) : '--'}</span></div>
-        <div class="settings-row"><span class="settings-row-label">Weigh-In Day</span><span class="settings-row-value">${DAY_NAMES_FULL[c.weighin_day ?? 1]}</span></div>
-      </div>
+        <div class="settings-row"><span class="settings-row-label">Event Date</span><span class="settings-row-value">${c.race_date ? formatDate(c.race_date) : '--'}</span></div>`;
+    }
+    if (goals.includes('gym_pr') && c.pr_goal) {
+      html += `<div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:4px"><span class="settings-row-label">PR Goal</span><span class="settings-row-value" style="font-family:'DM Sans',sans-serif;font-size:13px">${c.pr_goal}</span></div>`;
+    }
+    if (goals.includes('other') && c.other_goal) {
+      html += `<div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:4px"><span class="settings-row-label">Goal</span><span class="settings-row-value" style="font-family:'DM Sans',sans-serif;font-size:13px">${c.other_goal}</span></div>`;
+    }
+    html += `</div>`;
+
+    if (goals.includes('weight_loss')) {
+      html += `
       <div class="settings-section">
         <div class="settings-section-title">Weight</div>
         <div class="settings-row"><span class="settings-row-label">Start Weight</span><span class="settings-row-value">${c.start_weight || '--'} lbs</span></div>
         <div class="settings-row"><span class="settings-row-label">Goal Weight</span><span class="settings-row-value">${c.goal_weight || '--'} lbs</span></div>
-      </div>
+        <div class="settings-row"><span class="settings-row-label">Weigh-In Day</span><span class="settings-row-value">${DAY_NAMES_FULL[c.weighin_day ?? 1]}</span></div>
+      </div>`;
+    }
+
+    html += `
       <div class="settings-section">
         <div class="settings-section-title">Weekly Schedule</div>
         ${DAY_NAMES.map((d, i) => `<div class="settings-row"><span class="settings-row-label">${d}</span><span class="settings-row-value">${getSchedule()[i]}</span></div>`).join('')}
@@ -1189,6 +1325,8 @@
         <button class="settings-danger-btn" onclick="resetAndReonboard()">Reset & Start New Block</button>
         <button class="settings-secondary-btn" onclick="signOut()">Sign Out</button>
       </div>`;
+
+    document.getElementById('settings-body').innerHTML = html;
     document.getElementById('settings-overlay').classList.add('active');
   }
   function closeSettings() { document.getElementById('settings-overlay').classList.remove('active'); }
