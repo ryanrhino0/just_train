@@ -502,18 +502,28 @@
   <!-- Step 5: Running Plan -->
   <div class="ob-screen" data-step="4">
     <div class="ob-title">Running Plan</div>
-    <div class="ob-subtitle">Let AI build a personalized running plan based on your schedule and race date.</div>
+    <div class="ob-subtitle">Tell us about your running background so AI can build the right plan for you.</div>
     <div class="ob-field">
-      <label class="ob-label">Experience Level</label>
-      <select class="ob-select" id="ob-experience">
-        <option value="beginner">Beginner</option>
-        <option value="intermediate" selected>Intermediate</option>
-        <option value="advanced">Advanced</option>
+      <label class="ob-label">How long have you been running?</label>
+      <select class="ob-select" id="ob-run-history">
+        <option value="new">Just getting started</option>
+        <option value="<6mo">Less than 6 months</option>
+        <option value="6-12mo">6 - 12 months</option>
+        <option value="1-3yr" selected>1 - 3 years</option>
+        <option value="3+yr">3+ years</option>
       </select>
     </div>
     <div class="ob-field">
       <label class="ob-label">Current Weekly Mileage</label>
       <input class="ob-input" id="ob-mileage" type="number" inputmode="numeric" placeholder="e.g. 15">
+    </div>
+    <div class="ob-field">
+      <label class="ob-label">Longest Run in the Last Month (miles)</label>
+      <input class="ob-input" id="ob-longest-run" type="number" inputmode="decimal" step="0.1" placeholder="e.g. 6">
+    </div>
+    <div class="ob-field">
+      <label class="ob-label">Comfortable Easy Pace (min/mile)</label>
+      <input class="ob-input" id="ob-easy-pace" type="text" placeholder="e.g. 9:30">
     </div>
     <button class="ob-btn ob-btn-next" id="ob-gen-btn" onclick="generatePlan()" style="margin-bottom:16px">Generate My Plan</button>
     <div id="ob-plan-area"></div>
@@ -900,6 +910,9 @@
     document.getElementById('ob-pr-goal').value = '';
     document.getElementById('ob-other-goal').value = '';
     document.getElementById('ob-mileage').value = '';
+    document.getElementById('ob-longest-run').value = '';
+    document.getElementById('ob-easy-pace').value = '';
+    document.getElementById('ob-run-history').value = '1-3yr';
     document.getElementById('ob-plan-area').innerHTML = '';
     document.getElementById('ob-finish-btn').disabled = true;
     document.getElementById('ob-gen-btn').disabled = false;
@@ -1082,8 +1095,10 @@
           start_weight: parseFloat(document.getElementById('ob-start-weight').value) || 200,
           goal_weight: parseFloat(document.getElementById('ob-goal-weight').value) || 180,
           week_schedule: schedule,
-          experience_level: document.getElementById('ob-experience').value,
+          run_history: document.getElementById('ob-run-history').value,
           current_mileage: document.getElementById('ob-mileage').value || null,
+          longest_recent_run: document.getElementById('ob-longest-run').value || null,
+          easy_pace: document.getElementById('ob-easy-pace').value.trim() || null,
         }),
       });
 

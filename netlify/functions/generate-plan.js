@@ -49,7 +49,7 @@ export default async (req) => {
 
   try {
     const body = await req.json();
-    const { name, race_date, event_name, race_type, recent_time, goal_time, start_weight, goal_weight, week_schedule, experience_level, current_mileage } = body;
+    const { name, race_date, event_name, race_type, recent_time, goal_time, start_weight, goal_weight, week_schedule, run_history, current_mileage, longest_recent_run, easy_pace } = body;
 
     const today = new Date().toISOString().split('T')[0];
     const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -73,8 +73,10 @@ CONTEXT:
 - Today's date: ${today}
 - Goal race: ${raceInfo} on ${race_date}
 ${timeInfo.length ? '- ' + timeInfo.join('\n- ') + '\n' : ''}- Current weight: ${start_weight} lbs, goal: ${goal_weight} lbs
-- Experience level: ${experience_level || 'intermediate'}
+- Running background: ${run_history || 'not specified'}
 - Current weekly mileage: ${current_mileage || 'unknown'}
+- Longest run in the last month: ${longest_recent_run ? longest_recent_run + ' miles' : 'unknown'}
+- Comfortable easy pace: ${easy_pace || 'unknown'}
 
 WEEKLY SCHEDULE (fixed — includes both morning and evening sessions):
 ${scheduleStr}
