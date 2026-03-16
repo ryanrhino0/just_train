@@ -395,8 +395,10 @@
       <div class="activity-legend-item"><strong>Rest</strong> &mdash; No activity</div>
       <div class="activity-legend-item"><strong>Run Day</strong> &mdash; Regular run, ~45 min</div>
       <div class="activity-legend-item"><strong>Long Run</strong> &mdash; Variable distance based on plan</div>
-      <div class="activity-legend-item"><strong>Lift Only</strong> &mdash; Gym session, ~45 min</div>
+      <div class="activity-legend-item"><strong>Gym Lift</strong> &mdash; Gym session, ~45 min</div>
       <div class="activity-legend-item"><strong>Climb</strong> &mdash; Climbing session</div>
+      <div class="activity-legend-item"><strong>Pilates</strong> &mdash; Pilates class, ~45 min</div>
+      <div class="activity-legend-item"><strong>Yoga</strong> &mdash; Yoga session, ~60 min</div>
     </div>
     <div class="ob-nav">
       <button class="ob-btn ob-btn-back" onclick="obBack()">Back</button>
@@ -552,14 +554,16 @@
 
   const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const DAY_NAMES_FULL = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const DEFAULT_DAY_TYPES = ['Rest','Lift Only','Run Day','Long Run','Climb'];
-  const DEFAULT_SCHEDULE = [['Long Run'],['Lift Only'],['Run Day'],['Lift Only'],['Rest'],['Climb'],['Lift Only']];
+  const DEFAULT_DAY_TYPES = ['Rest','Gym Lift','Run Day','Long Run','Climb','Pilates','Yoga'];
+  const DEFAULT_SCHEDULE = [['Long Run'],['Gym Lift'],['Run Day'],['Gym Lift'],['Rest'],['Climb'],['Gym Lift']];
   const DEFAULT_TARGETS = {
     'Rest': { cal: 1750, protein: 190, water: 100 },
-    'Lift Only': { cal: 1950, protein: 200, water: 100 },
+    'Gym Lift': { cal: 1950, protein: 200, water: 100 },
     'Run Day': { cal: 2000, protein: 190, water: 100 },
     'Long Run': { cal: 2200, protein: 190, water: 100 },
     'Climb': { cal: 2000, protein: 190, water: 100 },
+    'Pilates': { cal: 1800, protein: 190, water: 100 },
+    'Yoga': { cal: 1750, protein: 190, water: 100 },
   };
   const OB_STEPS = 5;
 
@@ -568,7 +572,9 @@
     'Climb': { label: 'Climbing', icon: '&#9968;', color: 'var(--amber)' },
     'Run Day': { label: 'Running', icon: '&#127939;', color: 'var(--cyan)', group: 'run' },
     'Long Run': { label: 'Running', icon: '&#127939;', color: 'var(--cyan)', group: 'run' },
-    'Lift Only': { label: 'Lifting', icon: '&#127947;', color: 'var(--indigo)' },
+    'Gym Lift': { label: 'Lifting', icon: '&#127947;', color: 'var(--indigo)' },
+    'Pilates': { label: 'Pilates', icon: '&#129336;', color: 'var(--indigo)' },
+    'Yoga': { label: 'Yoga', icon: '&#129495;', color: 'var(--green)' },
   };
 
   let currentUser = null;
@@ -806,13 +812,22 @@
     for (let i = 0; i < OB_STEPS; i++) { const d = document.createElement('div'); d.className = 'ob-dot' + (i === 0 ? ' active' : ''); c.appendChild(d); }
   }
   function buildObSchedule() {
-    document.getElementById('ob-schedule').innerHTML = DAY_NAMES.map((day, i) => {
+    const allOpts = ['None', ...DEFAULT_DAY_TYPES];
+    const header = `<div class="ob-day-row" style="border:none;background:none;padding:4px 14px">
+      <span class="ob-day-name"></span>
+      <div class="ob-day-selects">
+        <span style="flex:1;text-align:center;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Morning</span>
+        <span style="flex:1;text-align:center;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Evening</span>
+      </div>
+    </div>`;
+    const rows = DAY_NAMES.map((day, i) => {
       const primary = DEFAULT_SCHEDULE[i][0];
       const secondary = DEFAULT_SCHEDULE[i].length > 1 ? DEFAULT_SCHEDULE[i][1] : 'None';
-      const opts1 = DEFAULT_DAY_TYPES.map(t => `<option value="${t}" ${primary === t ? 'selected' : ''}>${t}</option>`).join('');
-      const opts2 = `<option value="None" ${secondary === 'None' ? 'selected' : ''}>None</option>` + DEFAULT_DAY_TYPES.map(t => `<option value="${t}" ${secondary === t ? 'selected' : ''}>${t}</option>`).join('');
+      const opts1 = allOpts.map(t => `<option value="${t}" ${primary === t ? 'selected' : ''}>${t}</option>`).join('');
+      const opts2 = allOpts.map(t => `<option value="${t}" ${secondary === t ? 'selected' : ''}>${t}</option>`).join('');
       return `<div class="ob-day-row"><span class="ob-day-name">${day}</span><div class="ob-day-selects"><select class="ob-day-select" data-day="${i}" data-slot="0">${opts1}</select><select class="ob-day-select" data-day="${i}" data-slot="1">${opts2}</select></div></div>`;
     }).join('');
+    document.getElementById('ob-schedule').innerHTML = header + rows;
   }
   function buildObTargets() {
     document.getElementById('ob-targets').innerHTML = DEFAULT_DAY_TYPES.map(type => {
