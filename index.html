@@ -1414,8 +1414,20 @@
     const selected = getSelectedDayTypes();
     runCard.style.display = selected.some(a => a === 'Run Day' || a === 'Long Run') ? '' : 'none';
   }
+  // Estimated calories burned per activity type
+  const ACTIVITY_BURN = {
+    'Rest': 0,
+    'Gym Lift': 300,
+    'Run Day': 400,
+    'Long Run': 600,  // default estimate, overridden by actual run calc
+    'Climb': 300,
+    'Pilates': 250,
+    'Yoga': 200,
+  };
+
   function updateTargetsFromSelected() {
-    // Stack calories: rest baseline + sum of each activity's extra calories above rest
+    // Calorie budget = rest baseline + fraction of calories burned per activity
+    // Most activities: +50% of burn | Long Run: +25% of burn
     const selected = getSelectedDayTypes();
     const targets = getTargets();
     const restTargets = targets['Rest'] || { cal: 1750, protein: 190, water: 100 };
@@ -1425,17 +1437,26 @@
       return;
     }
 
-    // Start with rest baseline, then add the extra from each non-rest activity
     let totalCal = restTargets.cal;
     let maxProtein = restTargets.protein;
     let maxWater = restTargets.water;
 
     selected.filter(t => t !== 'Rest').forEach(type => {
       const t = targets[type];
-      if (!t) return;
-      totalCal += Math.max(0, t.cal - restTargets.cal);
-      if (t.protein > maxProtein) maxProtein = t.protein;
-      if (t.water > maxWater) maxWater = t.water;
+      if (t && t.protein > maxProtein) maxProtein = t.protein;
+      if (t && t.water > maxWater) maxWater = t.water;
+
+      let burn = ACTIVITY_BURN[type] || 300;
+
+      // For run types, use actual run calories from calculator if available
+      if (type === 'Long Run' || type === 'Run Day') {
+        const runCalEl = document.getElementById('run-calories-result');
+        const actualRunCal = runCalEl ? parseInt(runCalEl.textContent) : 0;
+        if (actualRunCal > 0) burn = actualRunCal;
+      }
+
+      // Add 25% of burn to budget (maintains deficit while fueling recovery)
+      totalCal += Math.round(burn * 0.25);
     });
 
     updateTargetValues(totalCal, maxProtein, maxWater);
@@ -1596,6 +1617,8 @@
     let calories = 0.75 * weight * dist;
     if (hr > 0) calories *= (hr / 140);
     resultEl.textContent = Math.round(calories);
+    // Recalculate calorie budget with actual run burn
+    updateTargetsFromSelected();
   }
 
   // ==========================================
