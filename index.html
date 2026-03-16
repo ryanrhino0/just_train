@@ -429,8 +429,21 @@
     </div>
 
     <div id="ob-goal-event-section" style="display:none">
-      <div class="ob-field"><label class="ob-label">Event Name</label><input class="ob-input" id="ob-event-name" type="text" placeholder="e.g. Half Marathon"></div>
+      <div class="ob-field">
+        <label class="ob-label">Race Type</label>
+        <select class="ob-select" id="ob-race-type">
+          <option value="5K">5K</option>
+          <option value="10K">10K</option>
+          <option value="Half Marathon" selected>Half Marathon</option>
+          <option value="Marathon">Marathon</option>
+          <option value="Ultra Marathon">Ultra Marathon</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="ob-field"><label class="ob-label">Event Name (optional)</label><input class="ob-input" id="ob-event-name" type="text" placeholder="e.g. LA Marathon"></div>
       <div class="ob-field"><label class="ob-label">Event Date</label><input class="ob-input" id="ob-race-date" type="date"></div>
+      <div class="ob-field"><label class="ob-label">Most Recent Finish Time (optional)</label><input class="ob-input" id="ob-recent-time" type="text" placeholder="e.g. 2:05:30 or leave blank"></div>
+      <div class="ob-field"><label class="ob-label">Goal Finish Time</label><input class="ob-input" id="ob-goal-time" type="text" placeholder="e.g. 1:45:00"></div>
     </div>
 
     <div id="ob-goal-pr-section" style="display:none">
@@ -880,6 +893,9 @@
     document.getElementById('ob-start-weight').value = '';
     document.getElementById('ob-goal-weight').value = '';
     document.getElementById('ob-race-date').value = '';
+    document.getElementById('ob-race-type').value = 'Half Marathon';
+    document.getElementById('ob-recent-time').value = '';
+    document.getElementById('ob-goal-time').value = '';
     document.getElementById('ob-event-name').value = '';
     document.getElementById('ob-pr-goal').value = '';
     document.getElementById('ob-other-goal').value = '';
@@ -1050,7 +1066,7 @@
       schedule.push(dayActivities);
     }
     // Flatten to single string per day for API (use primary activity)
-    const flatSchedule = schedule.map(d => d[0]);
+    // Send full schedule (arrays) so API sees both morning and evening activities
 
     try {
       const res = await fetch('/api/generate-plan', {
@@ -1060,9 +1076,12 @@
           name: document.getElementById('ob-name').value.trim() || 'Athlete',
           race_date: document.getElementById('ob-race-date').value || null,
           event_name: document.getElementById('ob-event-name').value.trim() || null,
+          race_type: document.getElementById('ob-race-type').value || null,
+          recent_time: document.getElementById('ob-recent-time').value.trim() || null,
+          goal_time: document.getElementById('ob-goal-time').value.trim() || null,
           start_weight: parseFloat(document.getElementById('ob-start-weight').value) || 200,
           goal_weight: parseFloat(document.getElementById('ob-goal-weight').value) || 180,
-          week_schedule: flatSchedule,
+          week_schedule: schedule,
           experience_level: document.getElementById('ob-experience').value,
           current_mileage: document.getElementById('ob-mileage').value || null,
         }),
@@ -1100,6 +1119,9 @@
     // Goal-specific fields
     const raceDate = selectedGoals.has('event') ? (document.getElementById('ob-race-date').value || null) : null;
     const eventName = selectedGoals.has('event') ? (document.getElementById('ob-event-name').value.trim() || null) : null;
+    const raceType = selectedGoals.has('event') ? (document.getElementById('ob-race-type').value || null) : null;
+    const recentTime = selectedGoals.has('event') ? (document.getElementById('ob-recent-time').value.trim() || null) : null;
+    const goalTime = selectedGoals.has('event') ? (document.getElementById('ob-goal-time').value.trim() || null) : null;
     const startWeight = selectedGoals.has('weight_loss') ? (parseFloat(document.getElementById('ob-start-weight').value) || null) : null;
     const goalWeight = selectedGoals.has('weight_loss') ? (parseFloat(document.getElementById('ob-goal-weight').value) || null) : null;
     const weighinDay = selectedGoals.has('weight_loss') ? parseInt(document.getElementById('ob-weighin-day').value) : null;
@@ -1125,7 +1147,7 @@
     });
 
     const timezone = document.getElementById('ob-timezone').value;
-    const config = { name, goals, race_date: raceDate, event_name: eventName, start_weight: startWeight, goal_weight: goalWeight, weighin_day: weighinDay, pr_goal: prGoal, other_goal: otherGoal, week_schedule: schedule, targets, running_plan: generatedPlan, track_screen_time: obTrackScreenTime, timezone };
+    const config = { name, goals, race_date: raceDate, event_name: eventName, race_type: raceType, recent_time: recentTime, goal_time: goalTime, start_weight: startWeight, goal_weight: goalWeight, weighin_day: weighinDay, pr_goal: prGoal, other_goal: otherGoal, week_schedule: schedule, targets, running_plan: generatedPlan, track_screen_time: obTrackScreenTime, timezone };
 
     const { error } = await db.from('settings').upsert({ user_id: currentUser.id, config }, { onConflict: 'user_id' });
     if (error) { console.error('Settings save error:', error); return; }
@@ -1665,8 +1687,11 @@
 
     if (goals.includes('event')) {
       html += `
+        <div class="settings-row"><span class="settings-row-label">Race Type</span><span class="settings-row-value">${c.race_type || '--'}</span></div>
         <div class="settings-row"><span class="settings-row-label">Event</span><span class="settings-row-value">${c.event_name || '--'}</span></div>
-        <div class="settings-row"><span class="settings-row-label">Event Date</span><span class="settings-row-value">${c.race_date ? formatDate(c.race_date) : '--'}</span></div>`;
+        <div class="settings-row"><span class="settings-row-label">Event Date</span><span class="settings-row-value">${c.race_date ? formatDate(c.race_date) : '--'}</span></div>
+        <div class="settings-row"><span class="settings-row-label">Recent Time</span><span class="settings-row-value">${c.recent_time || '--'}</span></div>
+        <div class="settings-row"><span class="settings-row-label">Goal Time</span><span class="settings-row-value">${c.goal_time || '--'}</span></div>`;
     }
     if (goals.includes('gym_pr') && c.pr_goal) {
       html += `<div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:4px"><span class="settings-row-label">PR Goal</span><span class="settings-row-value" style="font-family:'DM Sans',sans-serif;font-size:13px">${c.pr_goal}</span></div>`;

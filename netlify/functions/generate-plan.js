@@ -49,29 +49,47 @@ export default async (req) => {
 
   try {
     const body = await req.json();
-    const { name, race_date, event_name, start_weight, goal_weight, week_schedule, experience_level, current_mileage } = body;
+    const { name, race_date, event_name, race_type, recent_time, goal_time, start_weight, goal_weight, week_schedule, experience_level, current_mileage } = body;
 
     const today = new Date().toISOString().split('T')[0];
     const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    const scheduleStr = week_schedule.map((type, i) => `${dayNames[i]}: ${type}`).join('\n');
+    // week_schedule can be array of strings OR array of arrays (morning/evening)
+    const scheduleStr = week_schedule.map((day, i) => {
+      if (Array.isArray(day)) {
+        const activities = day.filter(a => a && a !== 'None');
+        return `${dayNames[i]}: ${activities.join(' + ') || 'Rest'}`;
+      }
+      return `${dayNames[i]}: ${day}`;
+    }).join('\n');
+
+    const raceInfo = race_type ? `${race_type}${event_name ? ' (' + event_name + ')' : ''}` : (event_name || 'Race');
+    const timeInfo = [];
+    if (recent_time) timeInfo.push(`Most recent finish time: ${recent_time}`);
+    if (goal_time) timeInfo.push(`Goal finish time: ${goal_time}`);
 
     const prompt = `You are a running coach building a training plan for ${name}.
 
 CONTEXT:
 - Today's date: ${today}
-- Goal event: ${event_name || 'Race'} on ${race_date}
-- Current weight: ${start_weight} lbs, goal: ${goal_weight} lbs
+- Goal race: ${raceInfo} on ${race_date}
+${timeInfo.length ? '- ' + timeInfo.join('\n- ') + '\n' : ''}- Current weight: ${start_weight} lbs, goal: ${goal_weight} lbs
 - Experience level: ${experience_level || 'intermediate'}
 - Current weekly mileage: ${current_mileage || 'unknown'}
 
-WEEKLY SCHEDULE (fixed):
+WEEKLY SCHEDULE (fixed — includes both morning and evening sessions):
 ${scheduleStr}
 
+IMPORTANT: Look at ALL activities across both morning AND evening. A day like "Gym Lift + Run Day" means the person lifts in the morning and runs in the evening. You must plan runs for ANY day that includes "Run Day" or "Long Run" in either slot.
+
 TASK:
-Generate a week-by-week running plan from now until race day. For each week, specify the details for each running day (the days marked "Run Day" or "Long Run" in the schedule above).
+Generate a week-by-week running plan from now until race day. For each week, specify the details for each running day (any day that has "Run Day" or "Long Run" in the schedule above, whether morning or evening).
+
+${race_type ? `This is a ${race_type} training plan. Structure the mileage buildup appropriately for the ${race_type} distance.` : ''}
+${goal_time ? `The runner wants to finish in ${goal_time}. Pace guidance should work toward this goal.` : ''}
+${recent_time ? `Their most recent ${race_type || 'race'} time was ${recent_time}. Use this as a baseline for current fitness.` : ''}
 
 Rules:
-- Only plan running sessions for days marked "Run Day" or "Long Run"
+- Plan runs for EVERY day that has "Run Day" or "Long Run" in the schedule (morning or evening)
 - Build up mileage gradually (no more than 10% increase per week)
 - Include a taper in the final 2 weeks
 - For each run, specify: type (easy, tempo, intervals, long), distance, and pace guidance
