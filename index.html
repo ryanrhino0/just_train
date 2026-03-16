@@ -84,9 +84,14 @@
     .ob-input[type="date"] { cursor: pointer; }
     .ob-select { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 16px; padding: 14px; outline: none; appearance: none; -webkit-appearance: none; }
     .ob-schedule-grid { display: flex; flex-direction: column; gap: 8px; }
-    .ob-day-row { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; }
+    .ob-day-row { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; flex-wrap: wrap; }
     .ob-day-name { font-family: 'DM Mono', monospace; font-size: 14px; color: #fff; width: 40px; flex-shrink: 0; }
-    .ob-day-select { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 14px; padding: 8px 10px; outline: none; appearance: none; -webkit-appearance: none; }
+    .ob-day-selects { display: flex; flex: 1; gap: 8px; min-width: 0; }
+    .ob-day-select { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 14px; padding: 8px 10px; outline: none; appearance: none; -webkit-appearance: none; min-width: 0; }
+    .activity-legend { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-top: 12px; }
+    .activity-legend-title { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .activity-legend-item { font-size: 12px; color: var(--muted); padding: 2px 0; line-height: 1.5; }
+    .activity-legend-item strong { color: #e5e5e5; font-weight: 600; }
     .ob-targets-grid { display: flex; flex-direction: column; gap: 10px; }
     .ob-target-row { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
     .ob-target-type { font-size: 14px; font-weight: 600; color: var(--orange); margin-bottom: 10px; }
@@ -256,6 +261,22 @@
     .settings-row-value { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--orange); }
     .settings-danger-btn { width: 100%; padding: 14px; border-radius: 10px; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--red); color: var(--red); font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px; }
     .settings-secondary-btn { width: 100%; padding: 14px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); color: #e5e5e5; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+
+    /* Screen Time Toggle */
+    .ob-toggle-row { display: flex; align-items: center; gap: 12px; margin-top: 16px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; }
+    .ob-toggle-check { width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; color: var(--green); transition: all 0.2s; }
+    .ob-toggle-check.checked { border-color: var(--green); background: rgba(34,197,94,0.1); }
+    .ob-toggle-label { font-size: 14px; color: #e5e5e5; }
+    .ob-toggle-sublabel { font-size: 12px; color: var(--muted); }
+
+    /* Run Stats */
+    .run-stats-inputs { display: flex; flex-direction: column; gap: 10px; }
+    .run-stats-row { display: flex; align-items: center; gap: 10px; }
+    .run-stats-row label { font-size: 12px; color: var(--muted); width: 90px; flex-shrink: 0; }
+    .run-stats-row input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: #fff; font-family: 'DM Mono', monospace; font-size: 18px; padding: 10px; outline: none; }
+    .run-stats-row input:focus { border-color: var(--orange); }
+    .run-calories-result { font-family: 'DM Mono', monospace; font-size: 36px; font-weight: 500; color: var(--orange); text-align: center; padding: 12px 0 4px; }
+    .run-calories-label { font-size: 12px; color: var(--muted); text-align: center; text-transform: uppercase; letter-spacing: 0.5px; }
   </style>
 </head>
 <body>
@@ -306,6 +327,16 @@
         <button class="pill" data-goal="event" onclick="toggleGoalPill(this)">Event / Race</button>
         <button class="pill" data-goal="gym_pr" onclick="toggleGoalPill(this)">Gym PR</button>
         <button class="pill" data-goal="other" onclick="toggleGoalPill(this)">Other</button>
+      </div>
+    </div>
+    <div class="ob-field">
+      <label class="ob-label">Optional Tracking</label>
+      <div class="ob-toggle-row" id="ob-screen-time-toggle" onclick="toggleScreenTimeOpt()">
+        <div class="ob-toggle-check" id="ob-screen-time-check"></div>
+        <div>
+          <div class="ob-toggle-label">Track Screen Time</div>
+          <div class="ob-toggle-sublabel">Log daily screen time with a target limit</div>
+        </div>
       </div>
     </div>
     <div class="ob-nav"><button class="ob-btn ob-btn-next" onclick="obNext()">Next</button></div>
@@ -359,6 +390,14 @@
     <div class="ob-title">Weekly Schedule</div>
     <div class="ob-subtitle">What does each day of the week look like?</div>
     <div class="ob-schedule-grid" id="ob-schedule"></div>
+    <div class="activity-legend">
+      <div class="activity-legend-title">Activity Guide</div>
+      <div class="activity-legend-item"><strong>Rest</strong> &mdash; No activity</div>
+      <div class="activity-legend-item"><strong>Run Day</strong> &mdash; Regular run, ~45 min</div>
+      <div class="activity-legend-item"><strong>Long Run</strong> &mdash; Variable distance based on plan</div>
+      <div class="activity-legend-item"><strong>Lift Only</strong> &mdash; Gym session, ~45 min</div>
+      <div class="activity-legend-item"><strong>Climb</strong> &mdash; Climbing session</div>
+    </div>
     <div class="ob-nav">
       <button class="ob-btn ob-btn-back" onclick="obBack()">Back</button>
       <button class="ob-btn ob-btn-next" onclick="obNext()">Next</button>
@@ -458,6 +497,21 @@
       <div class="input-row"><input type="number" id="input-water" placeholder="0" inputmode="numeric"><span class="input-unit">oz</span></div>
       <div class="progress-wrap"><div class="progress-bar"><div class="progress-fill" id="water-progress" style="width:0%;background:var(--cyan)"></div></div></div>
     </div>
+    <div class="card" id="screen-time-card" style="display:none">
+      <div class="card-header"><span class="card-title">Screen Time</span><span class="card-badge" id="screen-time-badge">0 / 120 min</span></div>
+      <div class="input-row"><input type="number" id="input-screen-time" placeholder="0" inputmode="numeric"><span class="input-unit">min</span></div>
+      <div class="progress-wrap"><div class="progress-bar"><div class="progress-fill" id="screen-time-progress" style="width:0%;background:var(--green)"></div></div></div>
+    </div>
+    <div class="card" id="run-stats-card" style="display:none">
+      <div class="card-header"><span class="card-title">Run Stats</span></div>
+      <div class="run-stats-inputs">
+        <div class="run-stats-row"><label>Avg HR (bpm)</label><input type="number" id="input-run-hr" placeholder="0" inputmode="numeric"></div>
+        <div class="run-stats-row"><label>Distance (mi)</label><input type="number" id="input-run-distance" placeholder="0" inputmode="decimal" step="0.1"></div>
+        <div class="run-stats-row"><label>Duration (min)</label><input type="number" id="input-run-duration" placeholder="0" inputmode="numeric"></div>
+      </div>
+      <div class="run-calories-result" id="run-calories-result">--</div>
+      <div class="run-calories-label">Estimated Calories Burned</div>
+    </div>
     <div class="card workout-card" id="workout-card" onclick="toggleWorkout()">
       <div class="workout-inner"><div class="workout-check" id="workout-check"></div><span class="workout-label">Workout Completed</span></div>
     </div>
@@ -499,7 +553,7 @@
   const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const DAY_NAMES_FULL = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const DEFAULT_DAY_TYPES = ['Rest','Lift Only','Run Day','Long Run','Climb'];
-  const DEFAULT_SCHEDULE = ['Long Run','Lift Only','Run Day','Lift Only','Rest','Climb','Lift Only'];
+  const DEFAULT_SCHEDULE = [['Long Run'],['Lift Only'],['Run Day'],['Lift Only'],['Rest'],['Climb'],['Lift Only']];
   const DEFAULT_TARGETS = {
     'Rest': { cal: 1750, protein: 190, water: 100 },
     'Lift Only': { cal: 1950, protein: 200, water: 100 },
@@ -533,7 +587,11 @@
   function dayOfWeek(dateStr) { return new Date(dateStr + 'T12:00:00').getDay(); }
 
   function cfg() { return userSettings.config; }
-  function getSchedule() { return cfg().week_schedule || DEFAULT_SCHEDULE; }
+  function getSchedule() {
+    const sched = cfg().week_schedule || DEFAULT_SCHEDULE;
+    // Normalize: ensure each day is an array
+    return sched.map(d => Array.isArray(d) ? d : [d]);
+  }
   function getTargets() { return cfg().targets || DEFAULT_TARGETS; }
   function getDayTypes() { return Object.keys(getTargets()); }
   function getStartWeight() { return cfg().start_weight || 200; }
@@ -541,6 +599,8 @@
   function getRaceDate() { return cfg().race_date ? new Date(cfg().race_date) : null; }
   function getWeighInDay() { return cfg().weighin_day ?? 1; }
   function defaultDayType(dateStr) { return getSchedule()[dayOfWeek(dateStr)]; }
+  function getTrackScreenTime() { return cfg().track_screen_time || false; }
+  function getScreenTimeTarget() { return cfg().screen_time_target || 120; }
 
   function daysUntilRace() {
     const rd = getRaceDate(); if (!rd) return null;
@@ -678,11 +738,19 @@
   //  ONBOARDING
   // ==========================================
   let selectedGoals = new Set();
+  let obTrackScreenTime = false;
 
   function toggleGoalPill(el) {
     const goal = el.dataset.goal;
     if (selectedGoals.has(goal)) { selectedGoals.delete(goal); el.classList.remove('active'); }
     else { selectedGoals.add(goal); el.classList.add('active'); }
+  }
+
+  function toggleScreenTimeOpt() {
+    obTrackScreenTime = !obTrackScreenTime;
+    const check = document.getElementById('ob-screen-time-check');
+    if (obTrackScreenTime) { check.classList.add('checked'); check.innerHTML = '&#10003;'; }
+    else { check.classList.remove('checked'); check.innerHTML = ''; }
   }
 
   function updateGoalDetailsVisibility() {
@@ -695,8 +763,10 @@
 
   function hasRunDays() {
     for (let i = 0; i < 7; i++) {
-      const sel = document.querySelector(`.ob-day-select[data-day="${i}"]`);
-      if (sel && (sel.value === 'Run Day' || sel.value === 'Long Run')) return true;
+      for (let s = 0; s < 2; s++) {
+        const sel = document.querySelector(`.ob-day-select[data-day="${i}"][data-slot="${s}"]`);
+        if (sel && (sel.value === 'Run Day' || sel.value === 'Long Run')) return true;
+      }
     }
     return false;
   }
@@ -710,7 +780,7 @@
 
   function startOnboarding() {
     hideAll(); obStep = 0; generatedPlan = null;
-    selectedGoals = new Set();
+    selectedGoals = new Set(); obTrackScreenTime = false;
     document.getElementById('onboarding').classList.add('active');
     buildObDots(); buildObSchedule(); buildObTargets(); showObStep(0);
     document.getElementById('ob-name').value = '';
@@ -726,6 +796,8 @@
     document.getElementById('ob-gen-btn').disabled = false;
     document.getElementById('ob-gen-btn').textContent = 'Generate My Plan';
     document.querySelectorAll('#ob-goal-pills .pill').forEach(p => p.classList.remove('active'));
+    const stCheck = document.getElementById('ob-screen-time-check');
+    if (stCheck) { stCheck.classList.remove('checked'); stCheck.innerHTML = ''; }
     updateGoalDetailsVisibility();
   }
 
@@ -735,8 +807,11 @@
   }
   function buildObSchedule() {
     document.getElementById('ob-schedule').innerHTML = DAY_NAMES.map((day, i) => {
-      const opts = DEFAULT_DAY_TYPES.map(t => `<option value="${t}" ${DEFAULT_SCHEDULE[i] === t ? 'selected' : ''}>${t}</option>`).join('');
-      return `<div class="ob-day-row"><span class="ob-day-name">${day}</span><select class="ob-day-select" data-day="${i}">${opts}</select></div>`;
+      const primary = DEFAULT_SCHEDULE[i][0];
+      const secondary = DEFAULT_SCHEDULE[i].length > 1 ? DEFAULT_SCHEDULE[i][1] : 'None';
+      const opts1 = DEFAULT_DAY_TYPES.map(t => `<option value="${t}" ${primary === t ? 'selected' : ''}>${t}</option>`).join('');
+      const opts2 = `<option value="None" ${secondary === 'None' ? 'selected' : ''}>None</option>` + DEFAULT_DAY_TYPES.map(t => `<option value="${t}" ${secondary === t ? 'selected' : ''}>${t}</option>`).join('');
+      return `<div class="ob-day-row"><span class="ob-day-name">${day}</span><div class="ob-day-selects"><select class="ob-day-select" data-day="${i}" data-slot="0">${opts1}</select><select class="ob-day-select" data-day="${i}" data-slot="1">${opts2}</select></div></div>`;
     }).join('');
   }
   function buildObTargets() {
@@ -799,7 +874,15 @@
     area.innerHTML = '<div class="ob-plan-status"><div class="spin" style="width:24px;height:24px;border-width:2px;margin:0 auto 12px;border:2px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin 0.8s linear infinite"></div>Claude is building your plan...</div>';
 
     const schedule = [];
-    for (let i = 0; i < 7; i++) schedule.push(document.querySelector(`.ob-day-select[data-day="${i}"]`).value);
+    for (let i = 0; i < 7; i++) {
+      const slot0 = document.querySelector(`.ob-day-select[data-day="${i}"][data-slot="0"]`).value;
+      const slot1 = document.querySelector(`.ob-day-select[data-day="${i}"][data-slot="1"]`).value;
+      const dayActivities = [slot0];
+      if (slot1 !== 'None') dayActivities.push(slot1);
+      schedule.push(dayActivities);
+    }
+    // Flatten to single string per day for API (use primary activity)
+    const flatSchedule = schedule.map(d => d[0]);
 
     try {
       const res = await fetch('/api/generate-plan', {
@@ -811,7 +894,7 @@
           event_name: document.getElementById('ob-event-name').value.trim() || null,
           start_weight: parseFloat(document.getElementById('ob-start-weight').value) || 200,
           goal_weight: parseFloat(document.getElementById('ob-goal-weight').value) || 180,
-          week_schedule: schedule,
+          week_schedule: flatSchedule,
           experience_level: document.getElementById('ob-experience').value,
           current_mileage: document.getElementById('ob-mileage').value || null,
         }),
@@ -856,7 +939,13 @@
     const otherGoal = selectedGoals.has('other') ? (document.getElementById('ob-other-goal').value.trim() || null) : null;
 
     const schedule = [];
-    for (let i = 0; i < 7; i++) schedule.push(document.querySelector(`.ob-day-select[data-day="${i}"]`).value);
+    for (let i = 0; i < 7; i++) {
+      const slot0 = document.querySelector(`.ob-day-select[data-day="${i}"][data-slot="0"]`).value;
+      const slot1 = document.querySelector(`.ob-day-select[data-day="${i}"][data-slot="1"]`).value;
+      const dayActivities = [slot0];
+      if (slot1 !== 'None') dayActivities.push(slot1);
+      schedule.push(dayActivities);
+    }
 
     const targets = {};
     DEFAULT_DAY_TYPES.forEach(type => {
@@ -867,7 +956,7 @@
       };
     });
 
-    const config = { name, goals, race_date: raceDate, event_name: eventName, start_weight: startWeight, goal_weight: goalWeight, weighin_day: weighinDay, pr_goal: prGoal, other_goal: otherGoal, week_schedule: schedule, targets, running_plan: generatedPlan };
+    const config = { name, goals, race_date: raceDate, event_name: eventName, start_weight: startWeight, goal_weight: goalWeight, weighin_day: weighinDay, pr_goal: prGoal, other_goal: otherGoal, week_schedule: schedule, targets, running_plan: generatedPlan, track_screen_time: obTrackScreenTime };
 
     const { error } = await db.from('settings').upsert({ user_id: currentUser.id, config }, { onConflict: 'user_id' });
     if (error) { console.error('Settings save error:', error); return; }
@@ -936,12 +1025,15 @@
     const scheduled = {};
     const completed = {};
 
-    schedule.forEach((type, i) => {
-      const group = SESSION_GROUPS[type];
-      if (!group) return;
-      const key = group.group || type;
-      scheduled[key] = (scheduled[key] || 0) + 1;
-      completed[key] = completed[key] || 0;
+    schedule.forEach((dayActivities, i) => {
+      const activities = Array.isArray(dayActivities) ? dayActivities : [dayActivities];
+      activities.forEach(type => {
+        const group = SESSION_GROUPS[type];
+        if (!group) return;
+        const key = group.group || type;
+        scheduled[key] = (scheduled[key] || 0) + 1;
+        completed[key] = completed[key] || 0;
+      });
     });
 
     // Count completed sessions this week
@@ -1070,7 +1162,18 @@
     getDayTypes().forEach(type => {
       const btn = document.createElement('button');
       btn.className = 'pill'; btn.textContent = type;
-      btn.addEventListener('click', () => { selectPill(type); scheduleSave(); });
+      btn.addEventListener('click', () => {
+        selectPill(type);
+        // Show/hide run stats card based on selected pill
+        const runCard = document.getElementById('run-stats-card');
+        if (type === 'Run Day' || type === 'Long Run') { runCard.style.display = ''; }
+        else {
+          const dayActivities = defaultDayType(currentDate);
+          const arr = Array.isArray(dayActivities) ? dayActivities : [dayActivities];
+          if (!arr.some(a => a === 'Run Day' || a === 'Long Run')) runCard.style.display = 'none';
+        }
+        scheduleSave();
+      });
       container.appendChild(btn);
     });
   }
@@ -1093,7 +1196,9 @@
   // ==========================================
   function loadDay(dateStr) {
     const log = allLogs[dateStr];
-    selectPill(log ? log.day_type : defaultDayType(dateStr));
+    const dayActivities = defaultDayType(dateStr); // array
+    const primaryActivity = log ? log.day_type : (Array.isArray(dayActivities) ? dayActivities[0] : dayActivities);
+    selectPill(primaryActivity);
     document.getElementById('input-cal').value = log?.cal ?? '';
     document.getElementById('input-protein').value = log?.protein ?? '';
     document.getElementById('input-water').value = log?.water ?? '';
@@ -1101,6 +1206,30 @@
     workoutDone = log?.workout_done ?? false;
     updateWorkoutUI();
     updateProgressBars();
+
+    // Screen time
+    const stCard = document.getElementById('screen-time-card');
+    if (getTrackScreenTime()) {
+      stCard.style.display = '';
+      document.getElementById('input-screen-time').value = log?.screen_time ?? '';
+      updateScreenTimeProgress();
+    } else {
+      stCard.style.display = 'none';
+    }
+
+    // Run stats - show only if day activities include Run Day or Long Run
+    const allActivities = Array.isArray(dayActivities) ? dayActivities : [dayActivities];
+    const hasRun = allActivities.some(a => a === 'Run Day' || a === 'Long Run') || primaryActivity === 'Run Day' || primaryActivity === 'Long Run';
+    const runCard = document.getElementById('run-stats-card');
+    if (hasRun) {
+      runCard.style.display = '';
+      document.getElementById('input-run-hr').value = log?.run_hr ?? '';
+      document.getElementById('input-run-distance').value = log?.run_distance ?? '';
+      document.getElementById('input-run-duration').value = log?.run_duration ?? '';
+      updateRunCalories();
+    } else {
+      runCard.style.display = 'none';
+    }
   }
 
   // ==========================================
@@ -1139,6 +1268,59 @@
         scheduleSave();
       });
     });
+    // Screen time listener
+    const stEl = document.getElementById('input-screen-time');
+    if (stEl) {
+      const stClone = stEl.cloneNode(true);
+      stEl.replaceWith(stClone);
+      stClone.addEventListener('input', () => { updateScreenTimeProgress(); scheduleSave(); });
+    }
+    // Run stats listeners
+    ['input-run-hr', 'input-run-distance', 'input-run-duration'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        const clone = el.cloneNode(true);
+        el.replaceWith(clone);
+        clone.addEventListener('input', () => { updateRunCalories(); scheduleSave(); });
+      }
+    });
+  }
+
+  // ==========================================
+  //  SCREEN TIME
+  // ==========================================
+  function updateScreenTimeProgress() {
+    const val = parseInt(document.getElementById('input-screen-time')?.value) || 0;
+    const target = getScreenTimeTarget();
+    const pct = target ? Math.min(100, (val / target) * 100) : 0;
+    const fill = document.getElementById('screen-time-progress');
+    if (fill) {
+      fill.style.width = pct + '%';
+      // Inverted: green when low, red when high
+      fill.style.background = val <= target ? 'var(--green)' : 'var(--red)';
+    }
+    const badge = document.getElementById('screen-time-badge');
+    if (badge) badge.textContent = val + ' / ' + target + ' min';
+  }
+
+  // ==========================================
+  //  RUN CALORIE CALCULATOR
+  // ==========================================
+  function updateRunCalories() {
+    const hr = parseFloat(document.getElementById('input-run-hr')?.value) || 0;
+    const dist = parseFloat(document.getElementById('input-run-distance')?.value) || 0;
+    const resultEl = document.getElementById('run-calories-result');
+    if (!resultEl) return;
+
+    if (dist <= 0) { resultEl.textContent = '--'; return; }
+
+    // Get user weight: latest logged weight or start_weight
+    const sorted = Object.values(allLogs).filter(l => l.weight).sort((a, b) => b.date.localeCompare(a.date));
+    const weight = sorted.length > 0 ? sorted[0].weight : getStartWeight();
+
+    let calories = 0.75 * weight * dist;
+    if (hr > 0) calories *= (hr / 140);
+    resultEl.textContent = Math.round(calories);
   }
 
   // ==========================================
@@ -1158,6 +1340,17 @@
     const weightEl = document.getElementById('input-weight');
     const weightVal = weightEl ? parseFloat(weightEl.value) || null : null;
 
+    const screenTimeEl = document.getElementById('input-screen-time');
+    const screenTimeVal = screenTimeEl ? (parseInt(screenTimeEl.value) || null) : null;
+    const runHrEl = document.getElementById('input-run-hr');
+    const runDistEl = document.getElementById('input-run-distance');
+    const runDurEl = document.getElementById('input-run-duration');
+    const runCalEl = document.getElementById('run-calories-result');
+    const runHr = runHrEl ? (parseInt(runHrEl.value) || null) : null;
+    const runDist = runDistEl ? (parseFloat(runDistEl.value) || null) : null;
+    const runDur = runDurEl ? (parseInt(runDurEl.value) || null) : null;
+    const runCals = runCalEl ? (parseInt(runCalEl.textContent) || null) : null;
+
     const row = {
       date: currentDate, user_id: currentUser.id,
       cal: parseInt(document.getElementById('input-cal').value) || 0,
@@ -1167,6 +1360,11 @@
       day_type: getSelectedDayType(),
       workout_done: workoutDone,
       notes: document.getElementById('input-notes').value || null,
+      screen_time: screenTimeVal,
+      run_hr: runHr,
+      run_distance: runDist,
+      run_duration: runDur,
+      run_calories: runCals,
     };
 
     const { error } = await db.from('logs').upsert(row, { onConflict: 'user_id,date' });
@@ -1318,7 +1516,15 @@
     html += `
       <div class="settings-section">
         <div class="settings-section-title">Weekly Schedule</div>
-        ${DAY_NAMES.map((d, i) => `<div class="settings-row"><span class="settings-row-label">${d}</span><span class="settings-row-value">${getSchedule()[i]}</span></div>`).join('')}
+        ${DAY_NAMES.map((d, i) => {
+          const dayActs = getSchedule()[i];
+          const display = Array.isArray(dayActs) ? dayActs.join(' + ') : dayActs;
+          return `<div class="settings-row"><span class="settings-row-label">${d}</span><span class="settings-row-value">${display}</span></div>`;
+        }).join('')}
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-title">Tracking</div>
+        <div class="settings-row"><span class="settings-row-label">Screen Time Tracking</span><span class="settings-row-value">${c.track_screen_time ? 'On' : 'Off'}</span></div>
       </div>
       <div class="settings-section">
         <div class="settings-section-title">Actions</div>
