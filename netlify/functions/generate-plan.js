@@ -56,7 +56,7 @@ export default async (req) => {
     // week_schedule can be array of strings OR array of arrays (morning/evening)
     const scheduleStr = week_schedule.map((day, i) => {
       if (Array.isArray(day)) {
-        const activities = day.filter(a => a && a !== 'None');
+        const activities = day.filter(a => a && a !== 'Rest');
         return `${dayNames[i]}: ${activities.join(' + ') || 'Rest'}`;
       }
       return `${dayNames[i]}: ${day}`;

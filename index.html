@@ -938,7 +938,7 @@
     for (let i = 0; i < OB_STEPS; i++) { const d = document.createElement('div'); d.className = 'ob-dot' + (i === 0 ? ' active' : ''); c.appendChild(d); }
   }
   function buildObSchedule() {
-    const allOpts = ['None', ...DEFAULT_DAY_TYPES];
+    const allOpts = DEFAULT_DAY_TYPES;
     const header = `<div class="ob-day-row" style="border:none;background:none;padding:4px 14px">
       <span class="ob-day-name"></span>
       <div class="ob-day-selects">
@@ -948,7 +948,7 @@
     </div>`;
     const rows = DAY_NAMES.map((day, i) => {
       const primary = DEFAULT_SCHEDULE[i][0];
-      const secondary = DEFAULT_SCHEDULE[i].length > 1 ? DEFAULT_SCHEDULE[i][1] : 'None';
+      const secondary = DEFAULT_SCHEDULE[i].length > 1 ? DEFAULT_SCHEDULE[i][1] : 'Rest';
       const opts1 = allOpts.map(t => `<option value="${t}" ${primary === t ? 'selected' : ''}>${t}</option>`).join('');
       const opts2 = allOpts.map(t => `<option value="${t}" ${secondary === t ? 'selected' : ''}>${t}</option>`).join('');
       return `<div class="ob-day-row"><span class="ob-day-name">${day}</span><div class="ob-day-selects"><select class="ob-day-select" data-day="${i}" data-slot="0">${opts1}</select><select class="ob-day-select" data-day="${i}" data-slot="1">${opts2}</select></div></div>`;
@@ -1012,8 +1012,8 @@
       const slot0 = document.querySelector(`.ob-day-select[data-day="${i}"][data-slot="0"]`);
       const slot1 = document.querySelector(`.ob-day-select[data-day="${i}"][data-slot="1"]`);
       const day = [];
-      if (slot0 && slot0.value !== 'None') day.push(slot0.value);
-      if (slot1 && slot1.value !== 'None') day.push(slot1.value);
+      if (slot0 && slot0.value !== 'Rest') day.push(slot0.value);
+      if (slot1 && slot1.value !== 'Rest') day.push(slot1.value);
       schedule.push(day.length ? day : ['Rest']);
     }
 
@@ -1075,7 +1075,7 @@
       const slot0 = document.querySelector(`.ob-day-select[data-day="${i}"][data-slot="0"]`).value;
       const slot1 = document.querySelector(`.ob-day-select[data-day="${i}"][data-slot="1"]`).value;
       const dayActivities = [slot0];
-      if (slot1 !== 'None') dayActivities.push(slot1);
+      if (slot1 !== 'Rest') dayActivities.push(slot1);
       schedule.push(dayActivities);
     }
     // Flatten to single string per day for API (use primary activity)
@@ -1148,7 +1148,7 @@
       const slot0 = document.querySelector(`.ob-day-select[data-day="${i}"][data-slot="0"]`).value;
       const slot1 = document.querySelector(`.ob-day-select[data-day="${i}"][data-slot="1"]`).value;
       const dayActivities = [slot0];
-      if (slot1 !== 'None') dayActivities.push(slot1);
+      if (slot1 !== 'Rest') dayActivities.push(slot1);
       schedule.push(dayActivities);
     }
 
