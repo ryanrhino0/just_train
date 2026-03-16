@@ -1415,24 +1415,42 @@
     runCard.style.display = selected.some(a => a === 'Run Day' || a === 'Long Run') ? '' : 'none';
   }
   function updateTargetsFromSelected() {
-    // Use the highest-calorie selected activity for targets
+    // Stack calories: rest baseline + sum of each activity's extra calories above rest
     const selected = getSelectedDayTypes();
     const targets = getTargets();
-    let best = selected[0] || getDayTypes()[0];
-    let bestCal = 0;
-    selected.forEach(type => {
+    const restTargets = targets['Rest'] || { cal: 1750, protein: 190, water: 100 };
+
+    if (selected.length === 0 || (selected.length === 1 && selected[0] === 'Rest')) {
+      updateTargetValues(restTargets.cal, restTargets.protein, restTargets.water);
+      return;
+    }
+
+    // Start with rest baseline, then add the extra from each non-rest activity
+    let totalCal = restTargets.cal;
+    let maxProtein = restTargets.protein;
+    let maxWater = restTargets.water;
+
+    selected.filter(t => t !== 'Rest').forEach(type => {
       const t = targets[type];
-      if (t && t.cal > bestCal) { bestCal = t.cal; best = type; }
+      if (!t) return;
+      totalCal += Math.max(0, t.cal - restTargets.cal);
+      if (t.protein > maxProtein) maxProtein = t.protein;
+      if (t.water > maxWater) maxWater = t.water;
     });
-    updateTargets(best);
+
+    updateTargetValues(totalCal, maxProtein, maxWater);
+  }
+
+  function updateTargetValues(cal, protein, water) {
+    document.getElementById('target-cal').textContent = cal;
+    document.getElementById('target-protein').textContent = protein;
+    document.getElementById('target-water').textContent = water;
+    updateProgressBars();
   }
 
   function updateTargets(dayType) {
     const t = getTargets()[dayType] || { cal: 0, protein: 0, water: 0 };
-    document.getElementById('target-cal').textContent = t.cal;
-    document.getElementById('target-protein').textContent = t.protein;
-    document.getElementById('target-water').textContent = t.water;
-    updateProgressBars();
+    updateTargetValues(t.cal, t.protein, t.water);
   }
 
   // ==========================================
@@ -1490,10 +1508,13 @@
   //  PROGRESS BARS
   // ==========================================
   function updateProgressBars() {
-    const t = getTargets()[getSelectedDayType()] || { cal: 0, protein: 0, water: 0 };
-    setProgress('cal', parseInt(document.getElementById('input-cal').value) || 0, t.cal);
-    setProgress('protein', parseInt(document.getElementById('input-protein').value) || 0, t.protein);
-    setProgress('water', parseInt(document.getElementById('input-water').value) || 0, t.water);
+    // Read targets from the displayed values (already stacked by updateTargetsFromSelected)
+    const tCal = parseInt(document.getElementById('target-cal').textContent) || 0;
+    const tProtein = parseInt(document.getElementById('target-protein').textContent) || 0;
+    const tWater = parseInt(document.getElementById('target-water').textContent) || 0;
+    setProgress('cal', parseInt(document.getElementById('input-cal').value) || 0, tCal);
+    setProgress('protein', parseInt(document.getElementById('input-protein').value) || 0, tProtein);
+    setProgress('water', parseInt(document.getElementById('input-water').value) || 0, tWater);
   }
   function setProgress(id, current, target) {
     document.getElementById(id + '-progress').style.width = (target ? Math.min(100, (current / target) * 100) : 0) + '%';
