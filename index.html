@@ -1302,52 +1302,97 @@
   // ==========================================
   //  WEEKLY WEIGH-IN
   // ==========================================
+  // Get all weigh-ins sorted newest first
+  function getAllWeighIns() {
+    return Object.values(allLogs)
+      .filter(l => l.weight)
+      .sort((a, b) => b.date.localeCompare(a.date));
+  }
+
+  // Find the weigh-in for a specific week (by its Sunday start date)
+  function getWeekWeighIn(sundayStr) {
+    const dates = weekDates(sundayStr);
+    for (const date of dates) {
+      const log = allLogs[date];
+      if (log && log.weight) return log;
+    }
+    return null;
+  }
+
   function renderWeighIn() {
     const area = document.getElementById('weighin-area');
     const goals = cfg().goals || [];
     if (!goals.includes('weight_loss')) { area.innerHTML = ''; return; }
-    const todayDay = dayOfWeek(getUserDate());
+
+    const today = getUserDate();
+    const todayDay = dayOfWeek(today);
     const weighDay = getWeighInDay();
     const isWeighDay = todayDay === weighDay;
 
-    // Check if already weighed in this week
-    const ws = weekStart(getUserDate());
-    const dates = weekDates(ws);
-    const weighInDate = dates[weighDay];
-    const existingLog = allLogs[weighInDate];
-    const hasWeighed = existingLog && existingLog.weight;
+    // This week's weigh-in
+    const thisWeekSun = weekStart(today);
+    const thisWeekLog = getWeekWeighIn(thisWeekSun);
+    const hasWeighed = thisWeekLog && thisWeekLog.weight;
+
+    // Last week's weigh-in for comparison
+    const lastWeekSun = new Date(thisWeekSun + 'T12:00:00');
+    lastWeekSun.setDate(lastWeekSun.getDate() - 7);
+    const lastWeekStr = lastWeekSun.getFullYear() + '-' + String(lastWeekSun.getMonth()+1).padStart(2,'0') + '-' + String(lastWeekSun.getDate()).padStart(2,'0');
+    const lastWeekLog = getWeekWeighIn(lastWeekStr);
+
+    const startW = getStartWeight();
 
     if (isWeighDay && !hasWeighed) {
+      // Prompt for weigh-in
+      const lastWeight = lastWeekLog ? lastWeekLog.weight : null;
       area.innerHTML = `
         <div class="weighin-prompt">
           <div class="weighin-header">
             <span class="weighin-title">&#9878; Weekly Weigh-In</span>
             <span class="weighin-badge">${DAY_NAMES_FULL[weighDay]}</span>
           </div>
+          ${lastWeight ? `<div style="font-size:12px;color:var(--muted);margin-bottom:10px">Last week: ${lastWeight} lbs</div>` : ''}
           <div class="input-row">
             <input type="number" id="input-weight" placeholder="0" step="0.1" inputmode="decimal" style="font-size:24px">
             <span class="input-unit">lbs</span>
           </div>
           <div style="margin-top:8px;font-size:12px;color:var(--muted)" id="weight-delta"></div>
         </div>`;
-      // Listen for weight input
       const weightInput = document.getElementById('input-weight');
       weightInput.addEventListener('input', () => {
         updateWeightDelta();
         scheduleSave();
       });
     } else if (hasWeighed) {
-      const delta = existingLog.weight - getStartWeight();
-      const deltaStr = (delta >= 0 ? '+' : '') + delta.toFixed(1);
+      // Show this week's weight — persistent until next weigh-in day
+      const fromStart = thisWeekLog.weight - startW;
+      const fromStartStr = (fromStart >= 0 ? '+' : '') + fromStart.toFixed(1);
+
+      let weekChangeHtml = '';
+      if (lastWeekLog) {
+        const weekDelta = thisWeekLog.weight - lastWeekLog.weight;
+        const weekStr = (weekDelta >= 0 ? '+' : '') + weekDelta.toFixed(1);
+        const weekColor = weekDelta <= 0 ? 'var(--green)' : 'var(--red)';
+        weekChangeHtml = `<span style="color:${weekColor};font-weight:600">${weekStr} lbs this week</span>`;
+      }
+
+      const toGo = thisWeekLog.weight - getGoalWeight();
+
       area.innerHTML = `
         <div class="weighin-done">
           <div class="weighin-header">
             <span class="card-title">This Week's Weight</span>
-            <span class="weighin-badge" style="color:${delta <= 0 ? 'var(--green)' : 'var(--red)'}">${deltaStr} lbs</span>
+            <span class="weighin-badge" style="color:${fromStart <= 0 ? 'var(--green)' : 'var(--red)'}">${fromStartStr} from start</span>
           </div>
-          <div style="font-family:'DM Mono',monospace;font-size:24px;color:#fff">${existingLog.weight} lbs</div>
+          <div style="font-family:'DM Mono',monospace;font-size:28px;color:#fff">${thisWeekLog.weight} <span style="font-size:14px;color:var(--muted)">lbs</span></div>
+          <div style="display:flex;gap:16px;margin-top:8px;font-size:12px">
+            ${weekChangeHtml}
+            <span style="color:var(--muted)">${toGo.toFixed(1)} lbs to goal</span>
+          </div>
         </div>`;
     } else {
+      // Not weigh-in day, no weight this week yet
+      const lastWeight = lastWeekLog ? lastWeekLog.weight : null;
       area.innerHTML = `
         <div class="weighin-done">
           <div class="weighin-header">
@@ -1355,6 +1400,7 @@
             <span class="weighin-badge">${DAY_NAMES_FULL[weighDay]}</span>
           </div>
           <div style="font-size:13px;color:var(--muted)">Next weigh-in on ${DAY_NAMES_FULL[weighDay]}</div>
+          ${lastWeight ? `<div style="font-size:12px;color:var(--muted);margin-top:4px">Last: ${lastWeight} lbs</div>` : ''}
         </div>`;
     }
   }
@@ -1363,9 +1409,23 @@
     const w = parseFloat(document.getElementById('input-weight')?.value);
     const el = document.getElementById('weight-delta');
     if (!el || !w || isNaN(w)) { if (el) el.textContent = ''; return; }
-    const delta = w - getStartWeight();
-    el.textContent = (delta >= 0 ? '+' : '') + delta.toFixed(1) + ' lbs from start';
-    el.style.color = delta <= 0 ? 'var(--green)' : 'var(--red)';
+
+    // Show delta from last week if available, otherwise from start
+    const thisWeekSun = weekStart(getUserDate());
+    const lastWeekSun = new Date(thisWeekSun + 'T12:00:00');
+    lastWeekSun.setDate(lastWeekSun.getDate() - 7);
+    const lastWeekStr = lastWeekSun.getFullYear() + '-' + String(lastWeekSun.getMonth()+1).padStart(2,'0') + '-' + String(lastWeekSun.getDate()).padStart(2,'0');
+    const lastWeekLog = getWeekWeighIn(lastWeekStr);
+
+    if (lastWeekLog) {
+      const delta = w - lastWeekLog.weight;
+      el.textContent = (delta >= 0 ? '+' : '') + delta.toFixed(1) + ' lbs from last week';
+      el.style.color = delta <= 0 ? 'var(--green)' : 'var(--red)';
+    } else {
+      const delta = w - getStartWeight();
+      el.textContent = (delta >= 0 ? '+' : '') + delta.toFixed(1) + ' lbs from start';
+      el.style.color = delta <= 0 ? 'var(--green)' : 'var(--red)';
+    }
   }
 
   // ==========================================
