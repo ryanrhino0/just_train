@@ -809,10 +809,16 @@
   //  BOOT
   // ==========================================
   async function boot() {
-    const { data: { session } } = await db.auth.getSession();
-    document.getElementById('loader').style.display = 'none';
-    if (session) { currentUser = session.user; await loadUserAndLaunch(); }
-    else { showAuth(); }
+    try {
+      const { data: { session } } = await db.auth.getSession();
+      document.getElementById('loader').style.display = 'none';
+      if (session) { currentUser = session.user; await loadUserAndLaunch(); }
+      else { showAuth(); }
+    } catch (err) {
+      console.error('Boot error:', err);
+      document.getElementById('loader').style.display = 'none';
+      showAuth();
+    }
   }
 
   // ==========================================
@@ -892,17 +898,22 @@
   //  LOAD USER & LAUNCH
   // ==========================================
   async function loadUserAndLaunch() {
-    const { data: settings } = await db.from('settings').select('*').eq('user_id', currentUser.id).single();
-    if (!settings) { startOnboarding(); return; }
-    userSettings = settings;
-    currentDate = getUserDate();
-    allLogs = {};
-    const { data: logs } = await db.from('logs').select('*').eq('user_id', currentUser.id);
-    if (logs) logs.forEach(row => { allLogs[row.date] = row; });
-    hideAll();
-    document.getElementById('app').style.display = 'block';
-    setupHeader(); setupTabs(); setupDatePicker(); setupPills(); setupInputListeners();
-    loadDay(currentDate); updateStats(); renderSessionTracker(); renderWeighIn();
+    try {
+      const { data: settings, error: settingsErr } = await db.from('settings').select('*').eq('user_id', currentUser.id).single();
+      if (settingsErr || !settings) { startOnboarding(); return; }
+      userSettings = settings;
+      currentDate = getUserDate();
+      allLogs = {};
+      const { data: logs } = await db.from('logs').select('*').eq('user_id', currentUser.id);
+      if (logs) logs.forEach(row => { allLogs[row.date] = row; });
+      hideAll();
+      document.getElementById('app').style.display = 'block';
+      setupHeader(); setupTabs(); setupDatePicker(); setupPills(); setupInputListeners();
+      loadDay(currentDate); updateStats(); renderSessionTracker(); renderWeighIn();
+    } catch (err) {
+      console.error('Launch error:', err);
+      startOnboarding();
+    }
   }
 
   // ==========================================
