@@ -279,6 +279,24 @@
     .run-calories-label { font-size: 12px; color: var(--muted); text-align: center; text-transform: uppercase; letter-spacing: 0.5px; }
 
     /* Celebration Overlay */
+    /* Run Modal */
+    .run-modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      z-index: 150; align-items: center; justify-content: center; padding: 16px;
+    }
+    .run-modal-overlay.active { display: flex; }
+    .run-modal {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 24px; width: 100%; max-width: 360px; animation: celebratePop 0.3s ease;
+    }
+    .run-modal-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+    }
+    .run-modal-plan-info {
+      background: var(--bg); border-radius: 10px; padding: 12px; margin-bottom: 4px;
+      display: flex; gap: 10px; align-items: center;
+    }
+
     .celebration-overlay {
       display: none;
       position: fixed;
@@ -595,29 +613,8 @@
     <div class="date-picker"><input type="date" id="selected-date"></div>
     <div class="day-pills" id="day-pills"></div>
 
-    <!-- Run Calories (shows when run selected) -->
-    <div class="card" id="run-stats-card" style="display:none">
-      <div class="card-header">
-        <span class="card-title">Run Calories</span>
-        <span class="card-badge" id="run-budget-badge">+0 kcal to budget</span>
-      </div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:12px">How many calories did your run burn? (from Strava, Apple Watch, Garmin, etc.)</div>
-      <div class="input-row">
-        <input type="number" id="input-run-calories" placeholder="0" inputmode="numeric">
-        <span class="input-unit">kcal burned</span>
-      </div>
-      <div style="margin-top:10px;font-size:12px;color:var(--muted)">45% of your burn (<span id="run-budget-amount" style="color:var(--orange);font-weight:600">0</span> kcal) will be added to today's calorie budget.</div>
-    </div>
-
-    <!-- Today's Run from Plan -->
-    <div class="card" id="run-plan-card" style="display:none">
-      <div class="card-header">
-        <span class="card-title">Today's Run</span>
-        <span class="card-badge" id="run-plan-badge"></span>
-      </div>
-      <div id="run-plan-details"></div>
-      <div id="run-plan-confirm" style="margin-top:12px"></div>
-    </div>
+    <!-- Run summary (shows inline after logging) -->
+    <div id="run-summary-area"></div>
 
     <div class="card">
       <div class="card-header"><span class="card-title">Calories</span><span class="card-badge" id="cal-badge">0 / --</span></div>
@@ -662,6 +659,30 @@
   <!-- History Tab -->
   <div class="tab-content" id="tab-history">
     <div class="history-list" id="history-list"></div>
+  </div>
+</div>
+
+<!-- Hidden input for run calories (used by budget calc) -->
+<input type="hidden" id="input-run-calories" value="0">
+
+<!-- Run Modal -->
+<div class="run-modal-overlay" id="run-modal">
+  <div class="run-modal">
+    <div class="run-modal-header">
+      <span style="font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:#fff">Log Your Run</span>
+      <div style="cursor:pointer;color:var(--muted);font-size:20px" onclick="closeRunModal(false)">&#10005;</div>
+    </div>
+    <div id="run-modal-plan" style="margin-bottom:16px"></div>
+    <div class="ob-field" style="margin-bottom:14px">
+      <label class="ob-label">Distance (miles)</label>
+      <input class="ob-input" id="run-modal-distance" type="number" inputmode="decimal" step="0.1" placeholder="e.g. 3.0" style="font-size:20px;text-align:center">
+    </div>
+    <div class="ob-field" style="margin-bottom:14px">
+      <label class="ob-label">Calories Burned (from your watch/Strava)</label>
+      <input class="ob-input" id="run-modal-calories" type="number" inputmode="numeric" placeholder="e.g. 350" style="font-size:20px;text-align:center">
+    </div>
+    <div id="run-modal-budget" style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:16px"></div>
+    <button class="ob-btn ob-btn-next" onclick="saveRunModal()" style="width:100%">Log Run &#10003;</button>
   </div>
 </div>
 
@@ -710,8 +731,8 @@
     'Run Day': { label: 'Running', icon: '&#127939;', color: 'var(--cyan)', group: 'run' },
     'Long Run': { label: 'Running', icon: '&#127939;', color: 'var(--cyan)', group: 'run' },
     'Gym Lift': { label: 'Lifting', icon: '&#127947;', color: 'var(--indigo)' },
-    'Pilates': { label: 'Pilates', icon: '&#129336;', color: 'var(--indigo)' },
-    'Yoga': { label: 'Yoga', icon: '&#129495;', color: 'var(--green)' },
+    'Pilates': { label: 'Lifting', icon: '&#129336;', color: 'var(--indigo)', group: 'Gym Lift' },
+    'Yoga': { label: 'Lifting', icon: '&#129495;', color: 'var(--indigo)', group: 'Gym Lift' },
   };
 
   let currentUser = null;
@@ -1469,7 +1490,6 @@
         togglePill(type);
         updateTargetsFromSelected();
         updateRunStatsVisibility();
-        renderRunPlanCard();
         scheduleSave();
       });
       container.appendChild(btn);
@@ -1504,10 +1524,16 @@
     return selected[0] || getDayTypes()[0];
   }
   function updateRunStatsVisibility() {
-    const runCard = document.getElementById('run-stats-card');
-    if (!runCard) return;
     const selected = getSelectedDayTypes();
-    runCard.style.display = selected.some(a => a === 'Run Day' || a === 'Long Run') ? '' : 'none';
+    const hasRun = selected.some(a => a === 'Run Day' || a === 'Long Run');
+    // If run was just selected and no run data yet, open modal
+    if (hasRun) {
+      const existingCal = parseInt(document.getElementById('input-run-calories').value) || 0;
+      if (!existingCal) openRunModal();
+      renderRunSummary();
+    } else {
+      renderRunSummary();
+    }
   }
   // Estimated calories burned per activity type
   const ACTIVITY_BURN = {
@@ -1574,16 +1600,15 @@
   // ==========================================
   function loadDay(dateStr) {
     const log = allLogs[dateStr];
-    const dayActivities = defaultDayType(dateStr); // array from schedule
     if (log && log.day_type) {
       // day_type can be comma-separated for multi-select
       selectPills(log.day_type.split(',').map(s => s.trim()));
     } else {
-      const arr = Array.isArray(dayActivities) ? dayActivities : [dayActivities];
-      selectPills(arr);
+      // No log — leave pills unselected, let user choose
+      selectPills([]);
     }
     updateTargetsFromSelected();
-    updateRunStatsVisibility();
+    renderRunSummary();
     document.getElementById('input-cal').value = log?.cal ?? '';
     document.getElementById('input-protein').value = log?.protein ?? '';
     document.getElementById('input-water').value = log?.water ?? '';
@@ -1603,19 +1628,9 @@
       stCard.style.display = 'none';
     }
 
-    // Run stats - show only if day activities include Run Day or Long Run
-    const allActivities = Array.isArray(dayActivities) ? dayActivities : [dayActivities];
-    const hasRun = allActivities.some(a => a === 'Run Day' || a === 'Long Run') || primaryActivity === 'Run Day' || primaryActivity === 'Long Run';
-    const runCard = document.getElementById('run-stats-card');
-    if (hasRun) {
-      runCard.style.display = '';
-      document.getElementById('input-run-calories').value = log?.run_calories ?? '';
-      updateRunBudget();
-    } else {
-      runCard.style.display = 'none';
-    }
-
-    renderRunPlanCard();
+    // Load run calories into hidden input
+    document.getElementById('input-run-calories').value = log?.run_calories ?? '';
+    renderRunSummary();
     renderCloseDayButton();
   }
 
@@ -1695,13 +1710,150 @@
   //  RUN CALORIE CALCULATOR
   // ==========================================
   function updateRunBudget() {
-    const burned = parseInt(document.getElementById('input-run-calories')?.value) || 0;
-    const bonus = Math.round(burned * 0.45);
-    const amountEl = document.getElementById('run-budget-amount');
-    const badgeEl = document.getElementById('run-budget-badge');
-    if (amountEl) amountEl.textContent = bonus;
-    if (badgeEl) badgeEl.textContent = '+' + bonus + ' kcal to budget';
     updateTargetsFromSelected();
+    renderRunSummary();
+  }
+
+  function openRunModal() {
+    const modal = document.getElementById('run-modal');
+    const distInput = document.getElementById('run-modal-distance');
+    const calInput = document.getElementById('run-modal-calories');
+    const budgetEl = document.getElementById('run-modal-budget');
+    const planEl = document.getElementById('run-modal-plan');
+
+    // Pre-fill with existing data if any
+    const existingCal = parseInt(document.getElementById('input-run-calories').value) || 0;
+    const existingDist = allLogs[currentDate]?.run_confirmed;
+    distInput.value = existingDist ? parseFloat(existingDist) || '' : '';
+    calInput.value = existingCal || '';
+
+    // Show planned run info if available
+    const planInfo = getTodayRunPlan();
+    if (planInfo) {
+      planEl.innerHTML = `<div class="run-modal-plan-info">
+        <span style="font-family:'DM Mono',monospace;font-size:18px;color:var(--cyan)">${planInfo.distance}</span>
+        <span style="font-size:13px;color:var(--muted)">${planInfo.type} &mdash; ${planInfo.notes}</span>
+      </div>`;
+    } else {
+      planEl.innerHTML = '';
+    }
+
+    // Live budget preview
+    const updatePreview = () => {
+      const cal = parseInt(calInput.value) || 0;
+      const bonus = Math.round(cal * 0.45);
+      budgetEl.innerHTML = cal > 0 ? `<span style="color:var(--orange);font-weight:600">+${bonus} kcal</span> will be added to your calorie budget` : '';
+    };
+    calInput.oninput = updatePreview;
+    updatePreview();
+
+    modal.classList.add('active');
+  }
+
+  function closeRunModal(deselect) {
+    document.getElementById('run-modal').classList.remove('active');
+    if (deselect) {
+      // If user cancelled and had no prior data, deselect run pills
+      const existingCal = parseInt(document.getElementById('input-run-calories').value) || 0;
+      if (!existingCal) {
+        document.querySelectorAll('.pill.active').forEach(p => {
+          if (p.textContent === 'Run Day' || p.textContent === 'Long Run') p.classList.remove('active');
+        });
+        if (!document.querySelector('.pill.active')) {
+          // nothing selected — don't force rest, just leave blank
+        }
+        updateTargetsFromSelected();
+        renderRunSummary();
+      }
+    }
+  }
+
+  function saveRunModal() {
+    const dist = document.getElementById('run-modal-distance').value.trim();
+    const cal = parseInt(document.getElementById('run-modal-calories').value) || 0;
+
+    // Save calories to hidden input
+    document.getElementById('input-run-calories').value = cal;
+
+    // Save distance as confirmed
+    if (dist) {
+      const log = allLogs[currentDate] || {};
+      log.run_confirmed = dist + ' mi';
+      allLogs[currentDate] = log;
+    }
+
+    document.getElementById('run-modal').classList.remove('active');
+    updateRunBudget();
+    scheduleSave();
+  }
+
+  function getTodayRunPlan() {
+    const plan = cfg().running_plan;
+    if (!plan || !plan.weeks || !cfg().race_date) return null;
+    const rd = new Date(cfg().race_date);
+    const now = new Date(); now.setHours(0,0,0,0);
+    const daysLeft = Math.ceil((rd - now) / 86400000);
+    const weeksLeft = Math.ceil(daysLeft / 7);
+    const currentWeek = plan.total_weeks - weeksLeft + 1;
+    const week = plan.weeks.find(w => w.week === currentWeek);
+    if (!week) return null;
+    const todayDayName = new Date(currentDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long' });
+    return week.runs.find(r => r.day.toLowerCase().startsWith(todayDayName.toLowerCase().slice(0, 3))) || null;
+  }
+
+  function renderRunSummary() {
+    const area = document.getElementById('run-summary-area');
+    if (!area) return;
+
+    const selected = getSelectedDayTypes();
+    const hasRun = selected.some(a => a === 'Run Day' || a === 'Long Run');
+    if (!hasRun) { area.innerHTML = ''; return; }
+
+    const cal = parseInt(document.getElementById('input-run-calories').value) || 0;
+    const log = allLogs[currentDate];
+    const dist = log?.run_confirmed;
+    const bonus = Math.round(cal * 0.45);
+    const planInfo = getTodayRunPlan();
+
+    if (cal > 0 || dist) {
+      // Show logged summary — tap to reopen modal
+      area.innerHTML = `
+        <div class="card" style="cursor:pointer;border-color:var(--cyan)" onclick="openRunModal()">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:36px;height:36px;border-radius:50%;background:rgba(34,211,238,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--cyan);flex-shrink:0">&#127939;</div>
+            <div style="flex:1">
+              <div style="font-size:14px;font-weight:600;color:#fff">${dist || 'Run logged'}${cal ? ' &middot; ' + cal + ' cal burned' : ''}</div>
+              <div style="font-size:12px;color:var(--muted)">${bonus > 0 ? '+' + bonus + ' kcal to budget' : 'Tap to edit'}</div>
+            </div>
+            <span style="color:var(--green);font-size:18px">&#10003;</span>
+          </div>
+        </div>`;
+    } else if (planInfo) {
+      // Show planned run — tap to log
+      area.innerHTML = `
+        <div class="card" style="cursor:pointer;border-color:var(--border)" onclick="openRunModal()">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:36px;height:36px;border-radius:50%;background:rgba(34,211,238,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--cyan);flex-shrink:0">&#127939;</div>
+            <div style="flex:1">
+              <div style="font-size:14px;font-weight:600;color:#fff">${planInfo.distance} ${planInfo.type}</div>
+              <div style="font-size:12px;color:var(--muted)">${planInfo.notes} &middot; Tap to log</div>
+            </div>
+            <span style="color:var(--muted);font-size:14px">&#9998;</span>
+          </div>
+        </div>`;
+    } else {
+      // No plan, just prompt
+      area.innerHTML = `
+        <div class="card" style="cursor:pointer" onclick="openRunModal()">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:36px;height:36px;border-radius:50%;background:rgba(34,211,238,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--cyan);flex-shrink:0">&#127939;</div>
+            <div style="flex:1">
+              <div style="font-size:14px;font-weight:600;color:#fff">Log your run</div>
+              <div style="font-size:12px;color:var(--muted)">Tap to enter distance & calories</div>
+            </div>
+          </div>
+        </div>`;
+    }
   }
 
   // ==========================================
@@ -1936,87 +2088,7 @@
   // ==========================================
   //  CLOSE THE DAY
   // ==========================================
-  // ==========================================
-  //  TODAY'S RUN FROM PLAN
-  // ==========================================
-  function renderRunPlanCard() {
-    const card = document.getElementById('run-plan-card');
-    if (!card) return;
-
-    const selected = getSelectedDayTypes();
-    const hasRun = selected.some(a => a === 'Run Day' || a === 'Long Run');
-    if (!hasRun) { card.style.display = 'none'; return; }
-
-    const plan = cfg().running_plan;
-    if (!plan || !plan.weeks) { card.style.display = 'none'; return; }
-
-    // Figure out which week we're in
-    const raceDate = cfg().race_date;
-    if (!raceDate) { card.style.display = 'none'; return; }
-
-    const rd = new Date(raceDate);
-    const now = new Date(); now.setHours(0,0,0,0);
-    const daysLeft = Math.ceil((rd - now) / 86400000);
-    const weeksLeft = Math.ceil(daysLeft / 7);
-    const currentWeek = plan.total_weeks - weeksLeft + 1;
-
-    const week = plan.weeks.find(w => w.week === currentWeek);
-    if (!week) { card.style.display = 'none'; return; }
-
-    // Find today's run by day name
-    const todayDayName = new Date(currentDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long' });
-    const todayShort = todayDayName.slice(0, 3);
-    const run = week.runs.find(r =>
-      r.day.toLowerCase().startsWith(todayDayName.toLowerCase().slice(0, 3))
-    );
-
-    if (!run) { card.style.display = 'none'; return; }
-
-    card.style.display = '';
-    document.getElementById('run-plan-badge').textContent = 'Week ' + currentWeek;
-    document.getElementById('run-plan-details').innerHTML = `
-      <div style="display:flex;gap:12px;align-items:center;padding:8px 0">
-        <div style="font-family:'DM Mono',monospace;font-size:24px;color:var(--cyan);font-weight:500">${run.distance}</div>
-        <div>
-          <div style="font-size:14px;font-weight:600;color:#fff;text-transform:capitalize">${run.type}</div>
-          <div style="font-size:12px;color:var(--muted)">${run.notes}</div>
-        </div>
-      </div>`;
-
-    // Confirm mileage
-    const log = allLogs[currentDate];
-    const confirmed = log?.run_confirmed;
-    const confirmArea = document.getElementById('run-plan-confirm');
-
-    if (confirmed) {
-      confirmArea.innerHTML = `
-        <div style="display:flex;align-items:center;gap:10px;padding:10px;background:rgba(34,197,94,0.1);border:1px solid var(--green);border-radius:10px">
-          <span style="font-size:20px;color:var(--green)">&#10003;</span>
-          <span style="font-size:14px;font-weight:600;color:var(--green)">Run completed — ${confirmed}</span>
-        </div>`;
-    } else {
-      confirmArea.innerHTML = `
-        <div style="display:flex;gap:8px;align-items:center">
-          <input type="number" id="input-run-mileage" placeholder="${run.distance.replace(/[^0-9.]/g, '')}" inputmode="decimal" step="0.1"
-            style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:#fff;font-family:'DM Mono',monospace;font-size:18px;padding:10px;outline:none;text-align:center">
-          <span style="color:var(--muted);font-size:13px">mi</span>
-          <button onclick="confirmRun()" style="padding:10px 16px;border-radius:10px;background:var(--green);color:#000;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;border:none;cursor:pointer;white-space:nowrap">Done &#10003;</button>
-        </div>`;
-    }
-  }
-
-  function confirmRun() {
-    const input = document.getElementById('input-run-mileage');
-    const miles = input ? input.value.trim() : '';
-    if (!miles) return;
-
-    // Store confirmed mileage
-    const log = allLogs[currentDate] || {};
-    log.run_confirmed = miles + ' mi';
-    allLogs[currentDate] = log;
-
-    renderRunPlanCard();
-    scheduleSave();
+  // Old renderRunPlanCard removed — replaced by run modal + renderRunSummary
   }
 
   function renderCloseDayButton() {
