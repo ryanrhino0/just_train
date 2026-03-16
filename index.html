@@ -464,7 +464,9 @@
 <script>
   const SUPABASE_URL = 'https://vfcfdybqmawirygporic.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_r2DsBlPmISTTViQbG0PQXg_2WljdYu4';
-  const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: { flowType: 'implicit' }
+  });
 
   const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const DAY_NAMES_FULL = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -610,7 +612,7 @@
     const btn = document.getElementById('auth-verify-btn');
     const msg = document.getElementById('auth-code-msg');
     btn.disabled = true; btn.textContent = 'Verifying...';
-    const { data, error } = await db.auth.verifyOtp({ email: pendingEmail, token, type: 'magiclink' });
+    const { data, error } = await db.auth.verifyOtp({ email: pendingEmail, token, type: 'email' });
     if (error) {
       msg.style.color = 'var(--red)'; msg.textContent = error.message;
       btn.disabled = false; btn.textContent = 'Verify';
