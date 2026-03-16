@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Training Log">
+  <meta name="apple-mobile-web-app-title" content="Magic Train">
   <meta name="theme-color" content="#0a0a0a">
   <link rel="manifest" href="manifest.json">
-  <title>Training Log</title>
+  <title>Magic Train</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -41,124 +41,31 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    .app {
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 0 16px;
-    }
+    .app { max-width: 480px; margin: 0 auto; padding: 0 16px; }
 
     /* Loading Spinner */
-    .loader {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100dvh;
-      gap: 16px;
-    }
-    .loader .spin {
-      width: 40px;
-      height: 40px;
-      border: 3px solid var(--border);
-      border-top-color: var(--orange);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
+    .loader { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100dvh; gap: 16px; }
+    .loader .spin { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--orange); border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .loader span { color: var(--muted); font-size: 14px; }
 
-    /* ===== AUTH SCREEN ===== */
+    /* ===== AUTH ===== */
     .auth-screen { display: none; }
     .auth-screen.active { display: block; }
-    .auth-center {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 80dvh;
-      text-align: center;
-    }
-    .auth-logo {
-      font-family: 'DM Mono', monospace;
-      font-size: 32px;
-      font-weight: 500;
-      color: #fff;
-      margin-bottom: 4px;
-    }
-    .auth-subtitle {
-      font-size: 14px;
-      color: var(--muted);
-      margin-bottom: 40px;
-    }
-    .auth-form {
-      width: 100%;
-      max-width: 320px;
-    }
-    .auth-input {
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      color: #fff;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 16px;
-      padding: 16px;
-      outline: none;
-      text-align: center;
-      margin-bottom: 12px;
-    }
+    .auth-center { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80dvh; text-align: center; }
+    .auth-logo { font-family: 'DM Mono', monospace; font-size: 32px; font-weight: 500; color: #fff; margin-bottom: 4px; }
+    .auth-subtitle { font-size: 14px; color: var(--muted); margin-bottom: 40px; }
+    .auth-form { width: 100%; max-width: 320px; }
+    .auth-input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 16px; padding: 16px; outline: none; text-align: center; margin-bottom: 12px; }
     .auth-input:focus { border-color: var(--orange); }
     .auth-input::placeholder { color: var(--muted); }
-    .auth-btn {
-      width: 100%;
-      padding: 16px;
-      border-radius: 12px;
-      background: var(--orange);
-      color: #000;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 16px;
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
-    .auth-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+    .auth-btn { width: 100%; padding: 16px; border-radius: 12px; background: var(--orange); color: #000; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 600; border: none; cursor: pointer; transition: opacity 0.2s; }
+    .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .auth-btn:active:not(:disabled) { opacity: 0.8; }
-    .auth-msg {
-      font-size: 13px;
-      margin-top: 16px;
-      min-height: 20px;
-    }
-    .auth-back {
-      background: none;
-      border: none;
-      color: var(--muted);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      cursor: pointer;
-      margin-top: 16px;
-    }
-    .auth-code-inputs {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      margin-bottom: 12px;
-    }
-    .auth-code-digit {
-      width: 48px;
-      height: 56px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: #fff;
-      font-family: 'DM Mono', monospace;
-      font-size: 24px;
-      text-align: center;
-      outline: none;
-    }
+    .auth-msg { font-size: 13px; margin-top: 16px; min-height: 20px; }
+    .auth-back { background: none; border: none; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer; margin-top: 16px; }
+    .auth-code-inputs { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; }
+    .auth-code-digit { width: 48px; height: 56px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: #fff; font-family: 'DM Mono', monospace; font-size: 24px; text-align: center; outline: none; }
     .auth-code-digit:focus { border-color: var(--orange); }
 
     /* ===== ONBOARDING ===== */
@@ -166,276 +73,72 @@
     .onboarding.active { display: block; }
     .ob-screen { display: none; padding: 40px 0; }
     .ob-screen.active { display: block; }
-    .ob-title {
-      font-family: 'DM Mono', monospace;
-      font-size: 24px;
-      font-weight: 500;
-      color: #fff;
-      margin-bottom: 8px;
-    }
-    .ob-subtitle {
-      font-size: 14px;
-      color: var(--muted);
-      margin-bottom: 32px;
-      line-height: 1.5;
-    }
+    .ob-title { font-family: 'DM Mono', monospace; font-size: 24px; font-weight: 500; color: #fff; margin-bottom: 8px; }
+    .ob-subtitle { font-size: 14px; color: var(--muted); margin-bottom: 32px; line-height: 1.5; }
     .ob-field { margin-bottom: 20px; }
-    .ob-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 8px;
-      display: block;
-    }
-    .ob-input {
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: #fff;
-      font-family: 'DM Mono', monospace;
-      font-size: 18px;
-      padding: 14px;
-      outline: none;
-    }
+    .ob-label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: block; }
+    .ob-input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: #fff; font-family: 'DM Mono', monospace; font-size: 18px; padding: 14px; outline: none; }
     .ob-input:focus { border-color: var(--orange); }
     .ob-input::placeholder { color: var(--muted); }
-    .ob-schedule-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .ob-day-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 14px;
-    }
-    .ob-day-name {
-      font-family: 'DM Mono', monospace;
-      font-size: 14px;
-      color: #fff;
-      width: 40px;
-      flex-shrink: 0;
-    }
-    .ob-day-select {
-      flex: 1;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: #fff;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      padding: 8px 10px;
-      outline: none;
-      appearance: none;
-      -webkit-appearance: none;
-    }
-    .ob-targets-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .ob-target-row {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 14px;
-    }
-    .ob-target-type {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--orange);
-      margin-bottom: 10px;
-    }
-    .ob-target-inputs {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-    }
-    .ob-target-inputs label {
-      font-size: 10px;
-      color: var(--muted);
-      text-transform: uppercase;
-      display: block;
-      margin-bottom: 4px;
-    }
-    .ob-target-inputs input {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: #fff;
-      font-family: 'DM Mono', monospace;
-      font-size: 16px;
-      padding: 8px;
-      outline: none;
-      text-align: center;
-    }
+    .ob-select { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 16px; padding: 14px; outline: none; appearance: none; -webkit-appearance: none; }
+    .ob-schedule-grid { display: flex; flex-direction: column; gap: 8px; }
+    .ob-day-row { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; }
+    .ob-day-name { font-family: 'DM Mono', monospace; font-size: 14px; color: #fff; width: 40px; flex-shrink: 0; }
+    .ob-day-select { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 14px; padding: 8px 10px; outline: none; appearance: none; -webkit-appearance: none; }
+    .ob-targets-grid { display: flex; flex-direction: column; gap: 10px; }
+    .ob-target-row { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+    .ob-target-type { font-size: 14px; font-weight: 600; color: var(--orange); margin-bottom: 10px; }
+    .ob-target-inputs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .ob-target-inputs label { font-size: 10px; color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 4px; }
+    .ob-target-inputs input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: #fff; font-family: 'DM Mono', monospace; font-size: 16px; padding: 8px; outline: none; text-align: center; }
     .ob-target-inputs input:focus { border-color: var(--orange); }
-    .ob-nav {
-      display: flex;
-      gap: 10px;
-      margin-top: 32px;
-    }
-    .ob-btn {
-      flex: 1;
-      padding: 14px;
-      border-radius: 10px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 16px;
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
+    .ob-nav { display: flex; gap: 10px; margin-top: 32px; }
+    .ob-btn { flex: 1; padding: 14px; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 600; border: none; cursor: pointer; transition: opacity 0.2s; }
     .ob-btn:active { opacity: 0.8; }
+    .ob-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .ob-btn-next { background: var(--orange); color: #000; }
     .ob-btn-back { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
-    .ob-step-dots {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      margin-bottom: 24px;
-    }
-    .ob-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--border);
-    }
+    .ob-step-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 24px; }
+    .ob-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
     .ob-dot.active { background: var(--orange); }
     .ob-dot.done { background: var(--green); }
 
+    /* Plan preview in onboarding */
+    .ob-plan-status { text-align: center; padding: 24px; color: var(--muted); font-size: 14px; }
+    .ob-plan-preview { max-height: 400px; overflow-y: auto; }
+    .ob-plan-week { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 8px; }
+    .ob-plan-week-title { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--orange); margin-bottom: 8px; }
+    .ob-plan-run { font-size: 13px; color: #e5e5e5; padding: 4px 0; display: flex; gap: 8px; }
+    .ob-plan-run-day { color: var(--muted); width: 36px; flex-shrink: 0; }
+    .ob-plan-run-type { font-weight: 600; width: 70px; flex-shrink: 0; }
+    .ob-plan-run-dist { color: var(--cyan); width: 44px; flex-shrink: 0; }
+
     /* ===== HEADER ===== */
     header { padding: 20px 0 0; }
-    .header-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
+    .header-top { display: flex; justify-content: space-between; align-items: flex-start; }
     .header-left { flex: 1; }
-    .header-label {
-      font-size: 12px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    .header-title {
-      font-family: 'DM Mono', monospace;
-      font-size: 22px;
-      font-weight: 500;
-      color: #fff;
-      margin-top: 2px;
-    }
-    .header-settings {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 18px;
-      color: var(--muted);
-      transition: border-color 0.2s;
-      flex-shrink: 0;
-      margin-left: 12px;
-      margin-top: 4px;
-    }
+    .header-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+    .header-title { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; color: #fff; margin-top: 2px; }
+    .header-settings { width: 36px; height: 36px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; color: var(--muted); flex-shrink: 0; margin-left: 12px; margin-top: 4px; }
     .header-settings:active { border-color: var(--orange); color: var(--orange); }
     .countdown { text-align: right; }
-    .countdown-num {
-      font-family: 'DM Mono', monospace;
-      font-size: 36px;
-      font-weight: 500;
-      color: var(--orange);
-      line-height: 1;
-    }
-    .countdown-label {
-      font-size: 11px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
+    .countdown-num { font-family: 'DM Mono', monospace; font-size: 36px; font-weight: 500; color: var(--orange); line-height: 1; }
+    .countdown-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
     /* Stats Bar */
-    .stats-bar {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      margin-top: 16px;
-    }
-    .stat {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 8px;
-      text-align: center;
-    }
-    .stat-value {
-      font-family: 'DM Mono', monospace;
-      font-size: 16px;
-      font-weight: 500;
-      color: #fff;
-    }
-    .stat-label {
-      font-size: 10px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-top: 2px;
-    }
+    .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 16px; }
+    .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 8px; text-align: center; }
+    .stat-value { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; color: #fff; }
+    .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
 
     /* Tabs */
-    .tabs {
-      display: flex;
-      gap: 4px;
-      margin-top: 16px;
-      background: var(--surface);
-      border-radius: 10px;
-      padding: 4px;
-      border: 1px solid var(--border);
-    }
-    .tab {
-      flex: 1;
-      text-align: center;
-      padding: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      border-radius: 8px;
-      cursor: pointer;
-      color: var(--muted);
-      transition: all 0.2s;
-      border: none;
-      background: none;
-      font-family: inherit;
-    }
+    .tabs { display: flex; gap: 4px; margin-top: 16px; background: var(--surface); border-radius: 10px; padding: 4px; border: 1px solid var(--border); }
+    .tab { flex: 1; text-align: center; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; color: var(--muted); transition: all 0.2s; border: none; background: none; font-family: inherit; }
     .tab.active { background: var(--orange); color: #000; }
 
     /* Sync Bar */
-    .sync-bar {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 12px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .sync-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--green);
-      flex-shrink: 0;
-    }
+    .sync-bar { display: flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 12px; color: var(--muted); }
+    .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
     .sync-dot.saving { background: var(--amber); animation: pulse 1s ease-in-out infinite; }
     .sync-dot.error { background: var(--red); }
     @keyframes pulse { 50% { opacity: 0.4; } }
@@ -444,176 +147,88 @@
     .tab-content { display: none; padding: 16px 0 32px; }
     .tab-content.active { display: block; }
 
+    /* Session Tracker */
+    .session-tracker { margin-bottom: 16px; }
+    .session-tracker-title { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+    .session-row { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 6px; }
+    .session-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .session-info { flex: 1; }
+    .session-type { font-size: 14px; font-weight: 600; color: #fff; }
+    .session-detail { font-size: 12px; color: var(--muted); margin-top: 1px; }
+    .session-count { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 500; }
+    .session-row.done { border-color: var(--green); }
+    .session-row.done .session-count { color: var(--green); }
+
+    /* Weekly Weigh-In */
+    .weighin-card { margin-bottom: 16px; }
+    .weighin-prompt { background: var(--surface); border: 1px solid var(--orange); border-radius: 14px; padding: 16px; }
+    .weighin-done { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
+    .weighin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .weighin-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--orange); }
+    .weighin-badge { font-family: 'DM Mono', monospace; font-size: 12px; padding: 2px 8px; border-radius: 6px; background: rgba(255,255,255,0.05); }
+
     /* Date Picker */
-    .date-picker {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-    .date-picker input[type="date"] {
-      flex: 1;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: #fff;
-      font-family: 'DM Mono', monospace;
-      font-size: 16px;
-      padding: 12px;
-      outline: none;
-    }
+    .date-picker { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .date-picker input[type="date"] { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: #fff; font-family: 'DM Mono', monospace; font-size: 16px; padding: 12px; outline: none; }
     .date-picker input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
 
     /* Day Type Pills */
-    .day-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-    .pill {
-      padding: 8px 14px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 600;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--muted);
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: inherit;
-    }
-    .pill.active {
-      border-color: var(--orange);
-      color: var(--orange);
-      background: rgba(249, 115, 22, 0.1);
-    }
+    .day-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .pill { padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid var(--border); background: var(--surface); color: var(--muted); cursor: pointer; transition: all 0.2s; font-family: inherit; }
+    .pill.active { border-color: var(--orange); color: var(--orange); background: rgba(249, 115, 22, 0.1); }
 
     /* Cards */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px;
-      margin-bottom: 12px;
-    }
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-    .card-title {
-      font-size: 13px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--muted);
-    }
-    .card-badge {
-      font-family: 'DM Mono', monospace;
-      font-size: 12px;
-      padding: 2px 8px;
-      border-radius: 6px;
-      background: rgba(255,255,255,0.05);
-    }
-    .input-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .input-row input[type="number"],
-    .input-row input[type="text"] {
-      flex: 1;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: #fff;
-      font-family: 'DM Mono', monospace;
-      font-size: 24px;
-      padding: 12px;
-      outline: none;
-      width: 100%;
-    }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .card-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
+    .card-badge { font-family: 'DM Mono', monospace; font-size: 12px; padding: 2px 8px; border-radius: 6px; background: rgba(255,255,255,0.05); }
+    .input-row { display: flex; align-items: center; gap: 10px; }
+    .input-row input[type="number"], .input-row input[type="text"] { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; color: #fff; font-family: 'DM Mono', monospace; font-size: 24px; padding: 12px; outline: none; width: 100%; }
     .input-row input:focus { border-color: var(--orange); }
     .input-unit { font-size: 14px; color: var(--muted); white-space: nowrap; }
     .input-delta { font-family: 'DM Mono', monospace; font-size: 14px; white-space: nowrap; }
 
     /* Progress Bar */
     .progress-wrap { margin-top: 10px; }
-    .progress-bar {
-      height: 6px;
-      background: var(--bg);
-      border-radius: 3px;
-      overflow: hidden;
-    }
-    .progress-fill {
-      height: 100%;
-      border-radius: 3px;
-      transition: width 0.3s ease;
-      max-width: 100%;
-    }
+    .progress-bar { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease; max-width: 100%; }
 
     /* Workout Toggle */
     .workout-card { cursor: pointer; transition: border-color 0.2s; user-select: none; }
     .workout-card.done { border-color: var(--green); }
     .workout-inner { display: flex; align-items: center; gap: 12px; }
-    .workout-check {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      border: 2px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: all 0.2s;
-      font-size: 16px;
-    }
+    .workout-check { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; font-size: 16px; }
     .workout-card.done .workout-check { background: var(--green); border-color: var(--green); }
     .workout-label { font-size: 16px; font-weight: 600; }
 
     /* Notes */
-    textarea {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: #e5e5e5;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      padding: 12px;
-      min-height: 80px;
-      resize: vertical;
-      outline: none;
-    }
+    textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; color: #e5e5e5; font-family: 'DM Sans', sans-serif; font-size: 14px; padding: 12px; min-height: 80px; resize: vertical; outline: none; }
     textarea:focus { border-color: var(--orange); }
 
     /* Targets Grid */
-    .targets-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-top: 4px;
-    }
+    .targets-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 4px; }
     .target-item { text-align: center; padding: 8px; background: var(--bg); border-radius: 8px; }
     .target-val { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; color: #fff; }
     .target-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
 
+    /* ===== PLAN TAB ===== */
+    .plan-week { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
+    .plan-week.current { border-color: var(--orange); }
+    .plan-week-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .plan-week-num { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: var(--orange); }
+    .plan-week-label { font-size: 12px; color: var(--muted); }
+    .plan-run { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid var(--border); font-size: 13px; }
+    .plan-run:first-of-type { border-top: none; }
+    .plan-run-day { color: var(--muted); width: 36px; flex-shrink: 0; font-size: 12px; }
+    .plan-run-type { font-weight: 600; color: #fff; width: 72px; flex-shrink: 0; text-transform: capitalize; }
+    .plan-run-dist { font-family: 'DM Mono', monospace; color: var(--cyan); width: 48px; flex-shrink: 0; }
+    .plan-run-notes { color: var(--muted); font-size: 12px; flex: 1; }
+    .plan-notes { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; font-size: 13px; color: var(--muted); line-height: 1.5; }
+    .plan-empty { text-align: center; color: var(--muted); padding: 48px 16px; font-size: 14px; }
+
     /* History */
     .history-list { display: flex; flex-direction: column; gap: 8px; }
-    .history-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px 16px;
-      cursor: pointer;
-      transition: border-color 0.2s;
-      display: grid;
-      grid-template-columns: 48px 1fr auto;
-      align-items: center;
-      gap: 12px;
-    }
+    .history-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; cursor: pointer; transition: border-color 0.2s; display: grid; grid-template-columns: 48px 1fr auto; align-items: center; gap: 12px; }
     .history-card:active { border-color: var(--orange); }
     .history-score { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 500; text-align: center; line-height: 1; }
     .history-score-label { font-size: 9px; text-transform: uppercase; color: var(--muted); text-align: center; }
@@ -625,113 +240,37 @@
     .history-workout { font-size: 11px; margin-top: 2px; }
     .empty-state { text-align: center; color: var(--muted); padding: 48px 16px; font-size: 14px; }
 
-    /* ===== SETTINGS PANEL ===== */
-    .settings-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: var(--bg);
-      z-index: 100;
-      overflow-y: auto;
-      padding: var(--safe-top) 0 calc(var(--safe-bottom) + 24px);
-    }
+    /* ===== SETTINGS ===== */
+    .settings-overlay { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 100; overflow-y: auto; padding: var(--safe-top) 0 calc(var(--safe-bottom) + 24px); }
     .settings-overlay.active { display: block; }
-    .settings-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px 16px 0;
-      max-width: 480px;
-      margin: 0 auto;
-    }
+    .settings-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 16px 0; max-width: 480px; margin: 0 auto; }
     .settings-title { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; color: #fff; }
-    .settings-close {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 20px;
-      color: var(--muted);
-    }
+    .settings-close { width: 36px; height: 36px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: var(--muted); }
     .settings-body { max-width: 480px; margin: 0 auto; padding: 24px 16px 48px; }
     .settings-section { margin-bottom: 24px; }
-    .settings-section-title {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 12px;
-    }
-    .settings-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px;
-      margin-bottom: 8px;
-    }
+    .settings-section-title { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+    .settings-row { display: flex; justify-content: space-between; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 8px; }
     .settings-row-label { font-size: 14px; color: #e5e5e5; }
     .settings-row-value { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--orange); }
-    .settings-danger-btn {
-      width: 100%;
-      padding: 14px;
-      border-radius: 10px;
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid var(--red);
-      color: var(--red);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 8px;
-    }
-    .settings-secondary-btn {
-      width: 100%;
-      padding: 14px;
-      border-radius: 10px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: #e5e5e5;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 8px;
-    }
+    .settings-danger-btn { width: 100%; padding: 14px; border-radius: 10px; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--red); color: var(--red); font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+    .settings-secondary-btn { width: 100%; padding: 14px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); color: #e5e5e5; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px; }
   </style>
 </head>
 <body>
 
 <!-- Loader -->
-<div class="app" id="loader">
-  <div class="loader">
-    <div class="spin"></div>
-    <span>Loading...</span>
-  </div>
-</div>
+<div class="app" id="loader"><div class="loader"><div class="spin"></div><span>Loading...</span></div></div>
 
 <!-- Auth Screen -->
 <div class="app auth-screen" id="auth-screen">
   <div class="auth-center">
-    <div class="auth-logo">Training Log</div>
+    <div class="auth-logo">Magic Train</div>
     <div class="auth-subtitle">Log in with your email to get started</div>
-
-    <!-- Email Step -->
     <div class="auth-form" id="auth-email-step">
       <input class="auth-input" id="auth-email" type="email" placeholder="your@email.com" autocomplete="email">
       <button class="auth-btn" id="auth-send-btn" onclick="sendOtp()">Send Code</button>
       <div class="auth-msg" id="auth-email-msg"></div>
     </div>
-
-    <!-- Code Step -->
     <div class="auth-form" id="auth-code-step" style="display:none">
       <div style="font-size:14px;color:var(--muted);margin-bottom:16px">Enter the 6-digit code sent to <span id="auth-sent-to" style="color:#fff"></span></div>
       <div class="auth-code-inputs" id="auth-code-inputs">
@@ -751,42 +290,35 @@
 
 <!-- Onboarding -->
 <div class="app onboarding" id="onboarding">
-  <div style="padding-top:24px">
-    <div class="ob-step-dots" id="ob-dots"></div>
-  </div>
+  <div style="padding-top:24px"><div class="ob-step-dots" id="ob-dots"></div></div>
 
   <!-- Step 1: Name & Goal -->
   <div class="ob-screen active" data-step="0">
     <div class="ob-title">Let's set up</div>
     <div class="ob-subtitle">Your name and what you're working toward.</div>
-    <div class="ob-field">
-      <label class="ob-label">Your Name</label>
-      <input class="ob-input" id="ob-name" type="text" placeholder="e.g. Ryan">
-    </div>
-    <div class="ob-field">
-      <label class="ob-label">Goal Event / Race Date</label>
-      <input class="ob-input" id="ob-race-date" type="date">
-    </div>
-    <div class="ob-field">
-      <label class="ob-label">What's the event? (optional)</label>
-      <input class="ob-input" id="ob-event-name" type="text" placeholder="e.g. Half Marathon">
-    </div>
-    <div class="ob-nav">
-      <button class="ob-btn ob-btn-next" onclick="obNext()">Next</button>
-    </div>
+    <div class="ob-field"><label class="ob-label">Your Name</label><input class="ob-input" id="ob-name" type="text" placeholder="e.g. Ryan"></div>
+    <div class="ob-field"><label class="ob-label">Goal Event / Race Date</label><input class="ob-input" id="ob-race-date" type="date"></div>
+    <div class="ob-field"><label class="ob-label">What's the event? (optional)</label><input class="ob-input" id="ob-event-name" type="text" placeholder="e.g. Half Marathon"></div>
+    <div class="ob-nav"><button class="ob-btn ob-btn-next" onclick="obNext()">Next</button></div>
   </div>
 
-  <!-- Step 2: Weight -->
+  <!-- Step 2: Weight & Weigh-In Day -->
   <div class="ob-screen" data-step="1">
     <div class="ob-title">Weight Goals</div>
     <div class="ob-subtitle">Where you're starting and where you want to be.</div>
+    <div class="ob-field"><label class="ob-label">Current Weight (lbs)</label><input class="ob-input" id="ob-start-weight" type="number" inputmode="decimal" placeholder="200"></div>
+    <div class="ob-field"><label class="ob-label">Goal Weight (lbs)</label><input class="ob-input" id="ob-goal-weight" type="number" inputmode="decimal" placeholder="180"></div>
     <div class="ob-field">
-      <label class="ob-label">Current Weight (lbs)</label>
-      <input class="ob-input" id="ob-start-weight" type="number" inputmode="decimal" placeholder="200">
-    </div>
-    <div class="ob-field">
-      <label class="ob-label">Goal Weight (lbs)</label>
-      <input class="ob-input" id="ob-goal-weight" type="number" inputmode="decimal" placeholder="180">
+      <label class="ob-label">Weekly Weigh-In Day</label>
+      <select class="ob-select" id="ob-weighin-day">
+        <option value="0">Sunday</option>
+        <option value="1" selected>Monday</option>
+        <option value="2">Tuesday</option>
+        <option value="3">Wednesday</option>
+        <option value="4">Thursday</option>
+        <option value="5">Friday</option>
+        <option value="6">Saturday</option>
+      </select>
     </div>
     <div class="ob-nav">
       <button class="ob-btn ob-btn-back" onclick="obBack()">Back</button>
@@ -812,7 +344,31 @@
     <div class="ob-targets-grid" id="ob-targets"></div>
     <div class="ob-nav">
       <button class="ob-btn ob-btn-back" onclick="obBack()">Back</button>
-      <button class="ob-btn ob-btn-next" onclick="obFinish()">Start Training</button>
+      <button class="ob-btn ob-btn-next" onclick="obNext()">Next</button>
+    </div>
+  </div>
+
+  <!-- Step 5: Running Plan -->
+  <div class="ob-screen" data-step="4">
+    <div class="ob-title">Running Plan</div>
+    <div class="ob-subtitle">Let AI build a personalized running plan based on your schedule and race date.</div>
+    <div class="ob-field">
+      <label class="ob-label">Experience Level</label>
+      <select class="ob-select" id="ob-experience">
+        <option value="beginner">Beginner</option>
+        <option value="intermediate" selected>Intermediate</option>
+        <option value="advanced">Advanced</option>
+      </select>
+    </div>
+    <div class="ob-field">
+      <label class="ob-label">Current Weekly Mileage</label>
+      <input class="ob-input" id="ob-mileage" type="number" inputmode="numeric" placeholder="e.g. 15">
+    </div>
+    <button class="ob-btn ob-btn-next" id="ob-gen-btn" onclick="generatePlan()" style="margin-bottom:16px">Generate My Plan</button>
+    <div id="ob-plan-area"></div>
+    <div class="ob-nav">
+      <button class="ob-btn ob-btn-back" onclick="obBack()">Back</button>
+      <button class="ob-btn ob-btn-next" id="ob-finish-btn" onclick="obFinish()" disabled>Start Training</button>
     </div>
   </div>
 </div>
@@ -823,7 +379,7 @@
     <div class="header-top">
       <div class="header-left">
         <div class="header-label" id="header-name">--</div>
-        <div class="header-title">Training Log</div>
+        <div class="header-title">Magic Train</div>
       </div>
       <div class="countdown">
         <div class="countdown-num" id="countdown-days">--</div>
@@ -832,25 +388,14 @@
       <div class="header-settings" onclick="openSettings()">&#9881;</div>
     </div>
     <div class="stats-bar">
-      <div class="stat">
-        <div class="stat-value" id="stat-weight">--</div>
-        <div class="stat-label">Weight</div>
-      </div>
-      <div class="stat">
-        <div class="stat-value" id="stat-lost">--</div>
-        <div class="stat-label">Lost</div>
-      </div>
-      <div class="stat">
-        <div class="stat-value" id="stat-togo">--</div>
-        <div class="stat-label">To Go</div>
-      </div>
-      <div class="stat">
-        <div class="stat-value" id="stat-avg-cal">--</div>
-        <div class="stat-label">7d Avg Cal</div>
-      </div>
+      <div class="stat"><div class="stat-value" id="stat-weight">--</div><div class="stat-label">Weight</div></div>
+      <div class="stat"><div class="stat-value" id="stat-lost">--</div><div class="stat-label">Lost</div></div>
+      <div class="stat"><div class="stat-value" id="stat-togo">--</div><div class="stat-label">To Go</div></div>
+      <div class="stat"><div class="stat-value" id="stat-avg-cal">--</div><div class="stat-label">7d Avg Cal</div></div>
     </div>
     <div class="tabs">
       <button class="tab active" data-tab="today">Today</button>
+      <button class="tab" data-tab="plan">Plan</button>
       <button class="tab" data-tab="history">History</button>
     </div>
     <div class="sync-bar">
@@ -859,155 +404,104 @@
     </div>
   </header>
 
+  <!-- Today Tab -->
   <div class="tab-content active" id="tab-today">
-    <div class="date-picker">
-      <input type="date" id="selected-date">
-    </div>
+    <!-- Weekly Weigh-In -->
+    <div id="weighin-area"></div>
+
+    <!-- Session Tracker -->
+    <div class="session-tracker" id="session-tracker"></div>
+
+    <div class="date-picker"><input type="date" id="selected-date"></div>
     <div class="day-pills" id="day-pills"></div>
+
     <div class="card">
-      <div class="card-header">
-        <span class="card-title">Morning Weight</span>
-        <span class="card-badge input-delta" id="weight-delta"></span>
-      </div>
-      <div class="input-row">
-        <input type="number" id="input-weight" placeholder="0" step="0.1" inputmode="decimal">
-        <span class="input-unit">lbs</span>
-      </div>
+      <div class="card-header"><span class="card-title">Calories</span><span class="card-badge" id="cal-badge">0 / --</span></div>
+      <div class="input-row"><input type="number" id="input-cal" placeholder="0" inputmode="numeric"><span class="input-unit">kcal</span></div>
+      <div class="progress-wrap"><div class="progress-bar"><div class="progress-fill" id="cal-progress" style="width:0%;background:var(--orange)"></div></div></div>
     </div>
     <div class="card">
-      <div class="card-header">
-        <span class="card-title">Calories</span>
-        <span class="card-badge" id="cal-badge">0 / --</span>
-      </div>
-      <div class="input-row">
-        <input type="number" id="input-cal" placeholder="0" inputmode="numeric">
-        <span class="input-unit">kcal</span>
-      </div>
-      <div class="progress-wrap">
-        <div class="progress-bar">
-          <div class="progress-fill" id="cal-progress" style="width:0%;background:var(--orange)"></div>
-        </div>
-      </div>
+      <div class="card-header"><span class="card-title">Protein</span><span class="card-badge" id="protein-badge">0 / --</span></div>
+      <div class="input-row"><input type="number" id="input-protein" placeholder="0" inputmode="numeric"><span class="input-unit">g</span></div>
+      <div class="progress-wrap"><div class="progress-bar"><div class="progress-fill" id="protein-progress" style="width:0%;background:var(--indigo)"></div></div></div>
     </div>
     <div class="card">
-      <div class="card-header">
-        <span class="card-title">Protein</span>
-        <span class="card-badge" id="protein-badge">0 / --</span>
-      </div>
-      <div class="input-row">
-        <input type="number" id="input-protein" placeholder="0" inputmode="numeric">
-        <span class="input-unit">g</span>
-      </div>
-      <div class="progress-wrap">
-        <div class="progress-bar">
-          <div class="progress-fill" id="protein-progress" style="width:0%;background:var(--indigo)"></div>
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-header">
-        <span class="card-title">Water</span>
-        <span class="card-badge" id="water-badge">0 / 100</span>
-      </div>
-      <div class="input-row">
-        <input type="number" id="input-water" placeholder="0" inputmode="numeric">
-        <span class="input-unit">oz</span>
-      </div>
-      <div class="progress-wrap">
-        <div class="progress-bar">
-          <div class="progress-fill" id="water-progress" style="width:0%;background:var(--cyan)"></div>
-        </div>
-      </div>
+      <div class="card-header"><span class="card-title">Water</span><span class="card-badge" id="water-badge">0 / 100</span></div>
+      <div class="input-row"><input type="number" id="input-water" placeholder="0" inputmode="numeric"><span class="input-unit">oz</span></div>
+      <div class="progress-wrap"><div class="progress-bar"><div class="progress-fill" id="water-progress" style="width:0%;background:var(--cyan)"></div></div></div>
     </div>
     <div class="card workout-card" id="workout-card" onclick="toggleWorkout()">
-      <div class="workout-inner">
-        <div class="workout-check" id="workout-check"></div>
-        <span class="workout-label">Workout Completed</span>
-      </div>
+      <div class="workout-inner"><div class="workout-check" id="workout-check"></div><span class="workout-label">Workout Completed</span></div>
     </div>
+    <div class="card"><div class="card-header"><span class="card-title">Notes</span></div><textarea id="input-notes" placeholder="Energy, food, sleep..."></textarea></div>
     <div class="card">
-      <div class="card-header">
-        <span class="card-title">Notes</span>
-      </div>
-      <textarea id="input-notes" placeholder="Energy, food, sleep..."></textarea>
-    </div>
-    <div class="card">
-      <div class="card-header">
-        <span class="card-title">Today's Targets</span>
-      </div>
+      <div class="card-header"><span class="card-title">Today's Targets</span></div>
       <div class="targets-grid">
-        <div class="target-item">
-          <div class="target-val" id="target-cal">--</div>
-          <div class="target-lbl">Calories</div>
-        </div>
-        <div class="target-item">
-          <div class="target-val" id="target-protein">--</div>
-          <div class="target-lbl">Protein</div>
-        </div>
-        <div class="target-item">
-          <div class="target-val" id="target-water">--</div>
-          <div class="target-lbl">Water (oz)</div>
-        </div>
+        <div class="target-item"><div class="target-val" id="target-cal">--</div><div class="target-lbl">Calories</div></div>
+        <div class="target-item"><div class="target-val" id="target-protein">--</div><div class="target-lbl">Protein</div></div>
+        <div class="target-item"><div class="target-val" id="target-water">--</div><div class="target-lbl">Water (oz)</div></div>
       </div>
     </div>
   </div>
 
+  <!-- Plan Tab -->
+  <div class="tab-content" id="tab-plan">
+    <div id="plan-content"></div>
+  </div>
+
+  <!-- History Tab -->
   <div class="tab-content" id="tab-history">
     <div class="history-list" id="history-list"></div>
   </div>
 </div>
 
-<!-- Settings Overlay -->
+<!-- Settings -->
 <div class="settings-overlay" id="settings-overlay">
-  <div class="settings-header">
-    <div class="settings-title">Settings</div>
-    <div class="settings-close" onclick="closeSettings()">&#10005;</div>
-  </div>
+  <div class="settings-header"><div class="settings-title">Settings</div><div class="settings-close" onclick="closeSettings()">&#10005;</div></div>
   <div class="settings-body" id="settings-body"></div>
 </div>
 
 <script>
-  // --- Constants ---
   const SUPABASE_URL = 'https://vfcfdybqmawirygporic.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_r2DsBlPmISTTViQbG0PQXg_2WljdYu4';
   const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const DAY_NAMES_FULL = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const DEFAULT_DAY_TYPES = ['Rest','Lift Only','Run Day','Long Run','Climb'];
   const DEFAULT_SCHEDULE = ['Long Run','Lift Only','Run Day','Lift Only','Rest','Climb','Lift Only'];
   const DEFAULT_TARGETS = {
-    'Rest':      { cal: 1750, protein: 190, water: 100 },
+    'Rest': { cal: 1750, protein: 190, water: 100 },
     'Lift Only': { cal: 1950, protein: 200, water: 100 },
-    'Run Day':   { cal: 2000, protein: 190, water: 100 },
-    'Long Run':  { cal: 2200, protein: 190, water: 100 },
-    'Climb':     { cal: 2000, protein: 190, water: 100 },
+    'Run Day': { cal: 2000, protein: 190, water: 100 },
+    'Long Run': { cal: 2200, protein: 190, water: 100 },
+    'Climb': { cal: 2000, protein: 190, water: 100 },
   };
-  const OB_STEPS = 4;
+  const OB_STEPS = 5;
 
-  // --- State ---
-  let currentUser = null; // Supabase auth user
-  let userSettings = null; // { user_id, config }
+  // Session type groupings for tracker
+  const SESSION_GROUPS = {
+    'Climb': { label: 'Climbing', icon: '&#9968;', color: 'var(--amber)' },
+    'Run Day': { label: 'Running', icon: '&#127939;', color: 'var(--cyan)', group: 'run' },
+    'Long Run': { label: 'Running', icon: '&#127939;', color: 'var(--cyan)', group: 'run' },
+    'Lift Only': { label: 'Lifting', icon: '&#127947;', color: 'var(--indigo)' },
+  };
+
+  let currentUser = null;
+  let userSettings = null;
   let allLogs = {};
   let currentDate = todayStr();
   let workoutDone = false;
   let saveTimer = null;
   let obStep = 0;
   let pendingEmail = '';
+  let generatedPlan = null;
 
   // --- Helpers ---
-  function todayStr() {
-    const d = new Date();
-    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-  }
-  function formatDate(str) {
-    const [y, m, d] = str.split('-');
-    return `${m}/${d}/${y}`;
-  }
-  function dayOfWeek(dateStr) {
-    return new Date(dateStr + 'T12:00:00').getDay();
-  }
+  function todayStr() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+  function formatDate(str) { const [y, m, d] = str.split('-'); return `${m}/${d}/${y}`; }
+  function dayOfWeek(dateStr) { return new Date(dateStr + 'T12:00:00').getDay(); }
 
-  // Config accessors
   function cfg() { return userSettings.config; }
   function getSchedule() { return cfg().week_schedule || DEFAULT_SCHEDULE; }
   function getTargets() { return cfg().targets || DEFAULT_TARGETS; }
@@ -1015,13 +509,32 @@
   function getStartWeight() { return cfg().start_weight || 200; }
   function getGoalWeight() { return cfg().goal_weight || 180; }
   function getRaceDate() { return cfg().race_date ? new Date(cfg().race_date) : null; }
+  function getWeighInDay() { return cfg().weighin_day ?? 1; }
   function defaultDayType(dateStr) { return getSchedule()[dayOfWeek(dateStr)]; }
 
   function daysUntilRace() {
-    const rd = getRaceDate();
-    if (!rd) return null;
+    const rd = getRaceDate(); if (!rd) return null;
     const now = new Date(); now.setHours(0,0,0,0);
     return Math.max(0, Math.ceil((rd - now) / 86400000));
+  }
+
+  // Get Sunday of the current week for a given date
+  function weekStart(dateStr) {
+    const d = new Date(dateStr + 'T12:00:00');
+    const day = d.getDay();
+    d.setDate(d.getDate() - day);
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  // Get all dates in a week starting from Sunday
+  function weekDates(sundayStr) {
+    const dates = [];
+    const d = new Date(sundayStr + 'T12:00:00');
+    for (let i = 0; i < 7; i++) {
+      dates.push(d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'));
+      d.setDate(d.getDate() + 1);
+    }
+    return dates;
   }
 
   function hideAll() {
@@ -1036,17 +549,10 @@
   //  BOOT
   // ==========================================
   async function boot() {
-    // Check for existing session
     const { data: { session } } = await db.auth.getSession();
-
     document.getElementById('loader').style.display = 'none';
-
-    if (session) {
-      currentUser = session.user;
-      await loadUserAndLaunch();
-    } else {
-      showAuth();
-    }
+    if (session) { currentUser = session.user; await loadUserAndLaunch(); }
+    else { showAuth(); }
   }
 
   // ==========================================
@@ -1063,95 +569,56 @@
   async function sendOtp() {
     const email = document.getElementById('auth-email').value.trim();
     if (!email) return;
-
     const btn = document.getElementById('auth-send-btn');
     const msg = document.getElementById('auth-email-msg');
-    btn.disabled = true;
-    btn.textContent = 'Sending...';
-    msg.textContent = '';
-
+    btn.disabled = true; btn.textContent = 'Sending...'; msg.textContent = '';
     const { error } = await db.auth.signInWithOtp({ email });
-
-    if (error) {
-      msg.style.color = 'var(--red)';
-      msg.textContent = error.message;
-      btn.disabled = false;
-      btn.textContent = 'Send Code';
-      return;
-    }
-
+    if (error) { msg.style.color = 'var(--red)'; msg.textContent = error.message; btn.disabled = false; btn.textContent = 'Send Code'; return; }
     pendingEmail = email;
     document.getElementById('auth-email-step').style.display = 'none';
     document.getElementById('auth-code-step').style.display = 'block';
     document.getElementById('auth-sent-to').textContent = email;
     document.getElementById('auth-code-msg').textContent = '';
-    btn.disabled = false;
-    btn.textContent = 'Send Code';
-
-    // Focus first digit
+    btn.disabled = false; btn.textContent = 'Send Code';
     document.querySelector('.auth-code-digit[data-idx="0"]').focus();
   }
 
   function setupCodeInputs() {
-    const digits = document.querySelectorAll('.auth-code-digit');
-    digits.forEach((input, i) => {
+    document.querySelectorAll('.auth-code-digit').forEach((input, i) => {
       input.addEventListener('input', (e) => {
-        const val = e.target.value;
-        if (val && i < 5) digits[i + 1].focus();
-        // Auto-verify when all 6 filled
-        const code = getCode();
-        if (code.length === 6) verifyOtp();
+        if (e.target.value && i < 5) document.querySelectorAll('.auth-code-digit')[i+1].focus();
+        if (getCode().length === 6) verifyOtp();
       });
       input.addEventListener('keydown', (e) => {
-        if (e.key === 'Backspace' && !e.target.value && i > 0) {
-          digits[i - 1].focus();
-        }
+        if (e.key === 'Backspace' && !e.target.value && i > 0) document.querySelectorAll('.auth-code-digit')[i-1].focus();
       });
       input.addEventListener('paste', (e) => {
         e.preventDefault();
         const paste = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 6);
-        paste.split('').forEach((ch, j) => {
-          if (digits[j]) digits[j].value = ch;
-        });
+        const digits = document.querySelectorAll('.auth-code-digit');
+        paste.split('').forEach((ch, j) => { if (digits[j]) digits[j].value = ch; });
         if (paste.length === 6) verifyOtp();
         else if (digits[paste.length]) digits[paste.length].focus();
       });
     });
   }
 
-  function getCode() {
-    return Array.from(document.querySelectorAll('.auth-code-digit')).map(d => d.value).join('');
-  }
+  function getCode() { return Array.from(document.querySelectorAll('.auth-code-digit')).map(d => d.value).join(''); }
 
   async function verifyOtp() {
-    const token = getCode();
-    if (token.length !== 6) return;
-
+    const token = getCode(); if (token.length !== 6) return;
     const btn = document.getElementById('auth-verify-btn');
     const msg = document.getElementById('auth-code-msg');
-    btn.disabled = true;
-    btn.textContent = 'Verifying...';
-
-    const { data, error } = await db.auth.verifyOtp({
-      email: pendingEmail,
-      token,
-      type: 'email',
-    });
-
+    btn.disabled = true; btn.textContent = 'Verifying...';
+    const { data, error } = await db.auth.verifyOtp({ email: pendingEmail, token, type: 'email' });
     if (error) {
-      msg.style.color = 'var(--red)';
-      msg.textContent = error.message;
-      btn.disabled = false;
-      btn.textContent = 'Verify';
-      // Clear code inputs
+      msg.style.color = 'var(--red)'; msg.textContent = error.message;
+      btn.disabled = false; btn.textContent = 'Verify';
       document.querySelectorAll('.auth-code-digit').forEach(d => d.value = '');
       document.querySelector('.auth-code-digit[data-idx="0"]').focus();
       return;
     }
-
-    currentUser = data.user;
-    btn.disabled = false;
-    btn.textContent = 'Verify';
+    currentUser = data.user; btn.disabled = false; btn.textContent = 'Verify';
     await loadUserAndLaunch();
   }
 
@@ -1162,80 +629,52 @@
   }
 
   // ==========================================
-  //  LOAD USER SETTINGS & LAUNCH
+  //  LOAD USER & LAUNCH
   // ==========================================
   async function loadUserAndLaunch() {
-    const userId = currentUser.id;
-
-    // Fetch settings
-    const { data: settings } = await db.from('settings').select('*').eq('user_id', userId).single();
-
-    if (!settings) {
-      // New user — onboard
-      startOnboarding();
-      return;
-    }
-
+    const { data: settings } = await db.from('settings').select('*').eq('user_id', currentUser.id).single();
+    if (!settings) { startOnboarding(); return; }
     userSettings = settings;
-
-    // Load logs
     allLogs = {};
-    const { data: logs } = await db.from('logs').select('*').eq('user_id', userId);
+    const { data: logs } = await db.from('logs').select('*').eq('user_id', currentUser.id);
     if (logs) logs.forEach(row => { allLogs[row.date] = row; });
-
     hideAll();
     document.getElementById('app').style.display = 'block';
-
-    setupHeader();
-    setupTabs();
-    setupDatePicker();
-    setupPills();
-    setupInputListeners();
-    loadDay(currentDate);
-    updateStats();
+    setupHeader(); setupTabs(); setupDatePicker(); setupPills(); setupInputListeners();
+    loadDay(currentDate); updateStats(); renderSessionTracker(); renderWeighIn();
   }
 
   // ==========================================
   //  ONBOARDING
   // ==========================================
   function startOnboarding() {
-    hideAll();
-    obStep = 0;
+    hideAll(); obStep = 0; generatedPlan = null;
     document.getElementById('onboarding').classList.add('active');
-    buildObDots();
-    buildObSchedule();
-    buildObTargets();
-    showObStep(0);
+    buildObDots(); buildObSchedule(); buildObTargets(); showObStep(0);
     document.getElementById('ob-race-date').value = '';
     document.getElementById('ob-name').value = '';
     document.getElementById('ob-event-name').value = '';
     document.getElementById('ob-start-weight').value = '';
     document.getElementById('ob-goal-weight').value = '';
+    document.getElementById('ob-mileage').value = '';
+    document.getElementById('ob-plan-area').innerHTML = '';
+    document.getElementById('ob-finish-btn').disabled = true;
+    document.getElementById('ob-gen-btn').disabled = false;
+    document.getElementById('ob-gen-btn').textContent = 'Generate My Plan';
   }
 
   function buildObDots() {
-    const c = document.getElementById('ob-dots');
-    c.innerHTML = '';
-    for (let i = 0; i < OB_STEPS; i++) {
-      const dot = document.createElement('div');
-      dot.className = 'ob-dot' + (i === 0 ? ' active' : '');
-      c.appendChild(dot);
-    }
+    const c = document.getElementById('ob-dots'); c.innerHTML = '';
+    for (let i = 0; i < OB_STEPS; i++) { const d = document.createElement('div'); d.className = 'ob-dot' + (i === 0 ? ' active' : ''); c.appendChild(d); }
   }
-
   function buildObSchedule() {
-    const grid = document.getElementById('ob-schedule');
-    grid.innerHTML = DAY_NAMES.map((day, i) => {
-      const opts = DEFAULT_DAY_TYPES.map(t =>
-        `<option value="${t}" ${DEFAULT_SCHEDULE[i] === t ? 'selected' : ''}>${t}</option>`
-      ).join('');
+    document.getElementById('ob-schedule').innerHTML = DAY_NAMES.map((day, i) => {
+      const opts = DEFAULT_DAY_TYPES.map(t => `<option value="${t}" ${DEFAULT_SCHEDULE[i] === t ? 'selected' : ''}>${t}</option>`).join('');
       return `<div class="ob-day-row"><span class="ob-day-name">${day}</span><select class="ob-day-select" data-day="${i}">${opts}</select></div>`;
     }).join('');
   }
-
   function buildObTargets() {
-    const grid = document.getElementById('ob-targets');
-    grid.innerHTML = DEFAULT_DAY_TYPES.map(type => {
+    document.getElementById('ob-targets').innerHTML = DEFAULT_DAY_TYPES.map(type => {
       const t = DEFAULT_TARGETS[type];
       return `<div class="ob-target-row"><div class="ob-target-type">${type}</div><div class="ob-target-inputs">
         <div><label>Calories</label><input type="number" inputmode="numeric" data-type="${type}" data-field="cal" value="${t.cal}"></div>
@@ -1249,13 +688,61 @@
     obStep = step;
     document.querySelectorAll('.ob-screen').forEach(s => s.classList.remove('active'));
     document.querySelector(`.ob-screen[data-step="${step}"]`).classList.add('active');
-    document.querySelectorAll('.ob-dot').forEach((d, i) => {
-      d.className = 'ob-dot' + (i === step ? ' active' : i < step ? ' done' : '');
-    });
+    document.querySelectorAll('.ob-dot').forEach((d, i) => { d.className = 'ob-dot' + (i === step ? ' active' : i < step ? ' done' : ''); });
   }
-
   function obNext() { if (obStep < OB_STEPS - 1) showObStep(obStep + 1); }
   function obBack() { if (obStep > 0) showObStep(obStep - 1); }
+
+  // --- Generate Running Plan ---
+  async function generatePlan() {
+    const btn = document.getElementById('ob-gen-btn');
+    const area = document.getElementById('ob-plan-area');
+    btn.disabled = true; btn.textContent = 'Generating...';
+    area.innerHTML = '<div class="ob-plan-status"><div class="spin" style="width:24px;height:24px;border-width:2px;margin:0 auto 12px;border:2px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin 0.8s linear infinite"></div>Claude is building your plan...</div>';
+
+    const schedule = [];
+    for (let i = 0; i < 7; i++) schedule.push(document.querySelector(`.ob-day-select[data-day="${i}"]`).value);
+
+    try {
+      const res = await fetch('/api/generate-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: document.getElementById('ob-name').value.trim() || 'Athlete',
+          race_date: document.getElementById('ob-race-date').value || null,
+          event_name: document.getElementById('ob-event-name').value.trim() || null,
+          start_weight: parseFloat(document.getElementById('ob-start-weight').value) || 200,
+          goal_weight: parseFloat(document.getElementById('ob-goal-weight').value) || 180,
+          week_schedule: schedule,
+          experience_level: document.getElementById('ob-experience').value,
+          current_mileage: document.getElementById('ob-mileage').value || null,
+        }),
+      });
+
+      if (!res.ok) throw new Error('Failed to generate plan');
+      generatedPlan = await res.json();
+
+      // Render preview
+      area.innerHTML = `<div class="ob-plan-preview">
+        ${generatedPlan.weeks.slice(0, 4).map(w => `
+          <div class="ob-plan-week">
+            <div class="ob-plan-week-title">Week ${w.week}: ${w.label}</div>
+            ${w.runs.map(r => `<div class="ob-plan-run">
+              <span class="ob-plan-run-day">${r.day.slice(0,3)}</span>
+              <span class="ob-plan-run-type">${r.type}</span>
+              <span class="ob-plan-run-dist">${r.distance}</span>
+              <span style="color:var(--muted);font-size:12px">${r.notes}</span>
+            </div>`).join('')}
+          </div>`).join('')}
+        ${generatedPlan.weeks.length > 4 ? `<div style="text-align:center;color:var(--muted);padding:8px;font-size:13px">+ ${generatedPlan.weeks.length - 4} more weeks</div>` : ''}
+      </div>`;
+      document.getElementById('ob-finish-btn').disabled = false;
+    } catch (err) {
+      area.innerHTML = `<div class="ob-plan-status" style="color:var(--red)">Failed to generate plan. You can skip and add one later.</div>`;
+      document.getElementById('ob-finish-btn').disabled = false;
+    }
+    btn.disabled = false; btn.textContent = 'Regenerate Plan';
+  }
 
   async function obFinish() {
     const name = document.getElementById('ob-name').value.trim() || 'User';
@@ -1263,11 +750,10 @@
     const eventName = document.getElementById('ob-event-name').value.trim() || null;
     const startWeight = parseFloat(document.getElementById('ob-start-weight').value) || 200;
     const goalWeight = parseFloat(document.getElementById('ob-goal-weight').value) || 180;
+    const weighinDay = parseInt(document.getElementById('ob-weighin-day').value);
 
     const schedule = [];
-    for (let i = 0; i < 7; i++) {
-      schedule.push(document.querySelector(`.ob-day-select[data-day="${i}"]`).value);
-    }
+    for (let i = 0; i < 7; i++) schedule.push(document.querySelector(`.ob-day-select[data-day="${i}"]`).value);
 
     const targets = {};
     DEFAULT_DAY_TYPES.forEach(type => {
@@ -1278,27 +764,17 @@
       };
     });
 
-    const config = { name, race_date: raceDate, event_name: eventName, start_weight: startWeight, goal_weight: goalWeight, week_schedule: schedule, targets };
+    const config = { name, race_date: raceDate, event_name: eventName, start_weight: startWeight, goal_weight: goalWeight, weighin_day: weighinDay, week_schedule: schedule, targets, running_plan: generatedPlan };
 
     const { error } = await db.from('settings').upsert({ user_id: currentUser.id, config }, { onConflict: 'user_id' });
-    if (error) {
-      console.error('Settings save error:', error);
-      return;
-    }
+    if (error) { console.error('Settings save error:', error); return; }
 
     userSettings = { user_id: currentUser.id, config };
     allLogs = {};
-
     hideAll();
     document.getElementById('app').style.display = 'block';
-
-    setupHeader();
-    setupTabs();
-    setupDatePicker();
-    setupPills();
-    setupInputListeners();
-    loadDay(currentDate);
-    updateStats();
+    setupHeader(); setupTabs(); setupDatePicker(); setupPills(); setupInputListeners();
+    loadDay(currentDate); updateStats(); renderSessionTracker(); renderWeighIn();
   }
 
   // ==========================================
@@ -1308,8 +784,7 @@
     document.getElementById('header-name').textContent = cfg().name || 'User';
     const d = daysUntilRace();
     document.getElementById('countdown-days').textContent = d !== null ? d : '--';
-    document.getElementById('countdown-label').textContent =
-      cfg().event_name ? `days to ${cfg().event_name.toLowerCase()}` : 'days to go';
+    document.getElementById('countdown-label').textContent = cfg().event_name ? `days to ${cfg().event_name.toLowerCase()}` : 'days to go';
   }
 
   // ==========================================
@@ -1325,54 +800,166 @@
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.getElementById('tab-' + clone.dataset.tab).classList.add('active');
         if (clone.dataset.tab === 'history') renderHistory();
+        if (clone.dataset.tab === 'plan') renderPlan();
       });
     });
   }
 
   // ==========================================
-  //  DATE PICKER
+  //  SESSION TRACKER
+  // ==========================================
+  function renderSessionTracker() {
+    const container = document.getElementById('session-tracker');
+    const schedule = getSchedule();
+    const ws = weekStart(todayStr());
+    const dates = weekDates(ws);
+
+    // Count scheduled sessions by group
+    const scheduled = {};
+    const completed = {};
+
+    schedule.forEach((type, i) => {
+      const group = SESSION_GROUPS[type];
+      if (!group) return;
+      const key = group.group || type;
+      scheduled[key] = (scheduled[key] || 0) + 1;
+      completed[key] = completed[key] || 0;
+    });
+
+    // Count completed sessions this week
+    dates.forEach((date, i) => {
+      const log = allLogs[date];
+      if (!log || !log.workout_done) return;
+      const type = log.day_type;
+      const group = SESSION_GROUPS[type];
+      if (!group) return;
+      const key = group.group || type;
+      completed[key] = (completed[key] || 0) + 1;
+    });
+
+    // Render
+    const groups = {};
+    Object.keys(scheduled).forEach(key => {
+      // Find the display info
+      const entry = Object.entries(SESSION_GROUPS).find(([t, g]) => (g.group || t) === key);
+      if (entry) groups[key] = { ...entry[1], key };
+    });
+
+    let html = '<div class="session-tracker-title">This Week</div>';
+    Object.keys(groups).forEach(key => {
+      const g = groups[key];
+      const done = completed[key] || 0;
+      const total = scheduled[key] || 0;
+      const remaining = Math.max(0, total - done);
+      const allDone = remaining === 0;
+      html += `<div class="session-row ${allDone ? 'done' : ''}">
+        <div class="session-icon" style="background:${allDone ? 'var(--green)' : g.color}20;color:${allDone ? 'var(--green)' : g.color}">${g.icon}</div>
+        <div class="session-info">
+          <div class="session-type">${g.label}</div>
+          <div class="session-detail">${done}/${total} done${remaining > 0 ? ' &middot; ' + remaining + ' left' : ''}</div>
+        </div>
+        <div class="session-count" style="color:${allDone ? 'var(--green)' : g.color}">${allDone ? '&#10003;' : remaining}</div>
+      </div>`;
+    });
+
+    container.innerHTML = html;
+  }
+
+  // ==========================================
+  //  WEEKLY WEIGH-IN
+  // ==========================================
+  function renderWeighIn() {
+    const area = document.getElementById('weighin-area');
+    const today = new Date();
+    const todayDay = today.getDay();
+    const weighDay = getWeighInDay();
+    const isWeighDay = todayDay === weighDay;
+
+    // Check if already weighed in this week
+    const ws = weekStart(todayStr());
+    const dates = weekDates(ws);
+    const weighInDate = dates[weighDay];
+    const existingLog = allLogs[weighInDate];
+    const hasWeighed = existingLog && existingLog.weight;
+
+    if (isWeighDay && !hasWeighed) {
+      area.innerHTML = `
+        <div class="weighin-prompt">
+          <div class="weighin-header">
+            <span class="weighin-title">&#9878; Weekly Weigh-In</span>
+            <span class="weighin-badge">${DAY_NAMES_FULL[weighDay]}</span>
+          </div>
+          <div class="input-row">
+            <input type="number" id="input-weight" placeholder="0" step="0.1" inputmode="decimal" style="font-size:24px">
+            <span class="input-unit">lbs</span>
+          </div>
+          <div style="margin-top:8px;font-size:12px;color:var(--muted)" id="weight-delta"></div>
+        </div>`;
+      // Listen for weight input
+      const weightInput = document.getElementById('input-weight');
+      weightInput.addEventListener('input', () => {
+        updateWeightDelta();
+        scheduleSave();
+      });
+    } else if (hasWeighed) {
+      const delta = existingLog.weight - getStartWeight();
+      const deltaStr = (delta >= 0 ? '+' : '') + delta.toFixed(1);
+      area.innerHTML = `
+        <div class="weighin-done">
+          <div class="weighin-header">
+            <span class="card-title">This Week's Weight</span>
+            <span class="weighin-badge" style="color:${delta <= 0 ? 'var(--green)' : 'var(--red)'}">${deltaStr} lbs</span>
+          </div>
+          <div style="font-family:'DM Mono',monospace;font-size:24px;color:#fff">${existingLog.weight} lbs</div>
+        </div>`;
+    } else {
+      area.innerHTML = `
+        <div class="weighin-done">
+          <div class="weighin-header">
+            <span class="card-title">Weekly Weigh-In</span>
+            <span class="weighin-badge">${DAY_NAMES_FULL[weighDay]}</span>
+          </div>
+          <div style="font-size:13px;color:var(--muted)">Next weigh-in on ${DAY_NAMES_FULL[weighDay]}</div>
+        </div>`;
+    }
+  }
+
+  function updateWeightDelta() {
+    const w = parseFloat(document.getElementById('input-weight')?.value);
+    const el = document.getElementById('weight-delta');
+    if (!el || !w || isNaN(w)) { if (el) el.textContent = ''; return; }
+    const delta = w - getStartWeight();
+    el.textContent = (delta >= 0 ? '+' : '') + delta.toFixed(1) + ' lbs from start';
+    el.style.color = delta <= 0 ? 'var(--green)' : 'var(--red)';
+  }
+
+  // ==========================================
+  //  DATE PICKER & PILLS
   // ==========================================
   function setupDatePicker() {
     const input = document.getElementById('selected-date');
     input.value = currentDate;
     const clone = input.cloneNode(true);
     input.replaceWith(clone);
-    clone.addEventListener('change', () => {
-      currentDate = clone.value;
-      loadDay(currentDate);
-    });
+    clone.addEventListener('change', () => { currentDate = clone.value; loadDay(currentDate); });
   }
 
-  // ==========================================
-  //  DAY TYPE PILLS
-  // ==========================================
   function setupPills() {
     const container = document.getElementById('day-pills');
     container.innerHTML = '';
     getDayTypes().forEach(type => {
       const btn = document.createElement('button');
-      btn.className = 'pill';
-      btn.textContent = type;
+      btn.className = 'pill'; btn.textContent = type;
       btn.addEventListener('click', () => { selectPill(type); scheduleSave(); });
       container.appendChild(btn);
     });
   }
-
   function selectPill(type) {
-    document.querySelectorAll('.pill').forEach(p => {
-      p.classList.toggle('active', p.textContent === type);
-    });
+    document.querySelectorAll('.pill').forEach(p => p.classList.toggle('active', p.textContent === type));
     updateTargets(type);
   }
+  function getSelectedDayType() { const a = document.querySelector('.pill.active'); return a ? a.textContent : getDayTypes()[0]; }
 
-  function getSelectedDayType() {
-    const active = document.querySelector('.pill.active');
-    return active ? active.textContent : getDayTypes()[0];
-  }
-
-  // ==========================================
-  //  TARGETS
-  // ==========================================
   function updateTargets(dayType) {
     const t = getTargets()[dayType] || { cal: 0, protein: 0, water: 0 };
     document.getElementById('target-cal').textContent = t.cal;
@@ -1386,74 +973,48 @@
   // ==========================================
   function loadDay(dateStr) {
     const log = allLogs[dateStr];
-    const dt = log ? log.day_type : defaultDayType(dateStr);
-    selectPill(dt);
-    document.getElementById('input-weight').value = log?.weight ?? '';
+    selectPill(log ? log.day_type : defaultDayType(dateStr));
     document.getElementById('input-cal').value = log?.cal ?? '';
     document.getElementById('input-protein').value = log?.protein ?? '';
     document.getElementById('input-water').value = log?.water ?? '';
     document.getElementById('input-notes').value = log?.notes ?? '';
     workoutDone = log?.workout_done ?? false;
     updateWorkoutUI();
-    updateWeightDelta();
     updateProgressBars();
-  }
-
-  // ==========================================
-  //  WEIGHT DELTA
-  // ==========================================
-  function updateWeightDelta() {
-    const w = parseFloat(document.getElementById('input-weight').value);
-    const el = document.getElementById('weight-delta');
-    if (!w || isNaN(w)) { el.textContent = ''; return; }
-    const delta = w - getStartWeight();
-    el.textContent = (delta >= 0 ? '+' : '') + delta.toFixed(1) + ' lbs';
-    el.style.color = delta <= 0 ? 'var(--green)' : 'var(--red)';
   }
 
   // ==========================================
   //  PROGRESS BARS
   // ==========================================
   function updateProgressBars() {
-    const dayType = getSelectedDayType();
-    const t = getTargets()[dayType] || { cal: 0, protein: 0, water: 0 };
+    const t = getTargets()[getSelectedDayType()] || { cal: 0, protein: 0, water: 0 };
     setProgress('cal', parseInt(document.getElementById('input-cal').value) || 0, t.cal);
     setProgress('protein', parseInt(document.getElementById('input-protein').value) || 0, t.protein);
     setProgress('water', parseInt(document.getElementById('input-water').value) || 0, t.water);
   }
-
   function setProgress(id, current, target) {
-    const pct = target ? Math.min(100, (current / target) * 100) : 0;
-    document.getElementById(id + '-progress').style.width = pct + '%';
+    document.getElementById(id + '-progress').style.width = (target ? Math.min(100, (current / target) * 100) : 0) + '%';
     document.getElementById(id + '-badge').textContent = current + ' / ' + target;
   }
 
   // ==========================================
-  //  WORKOUT TOGGLE
+  //  WORKOUT
   // ==========================================
-  function toggleWorkout() {
-    workoutDone = !workoutDone;
-    updateWorkoutUI();
-    scheduleSave();
-  }
-
+  function toggleWorkout() { workoutDone = !workoutDone; updateWorkoutUI(); scheduleSave(); }
   function updateWorkoutUI() {
-    const card = document.getElementById('workout-card');
-    const check = document.getElementById('workout-check');
-    card.classList.toggle('done', workoutDone);
-    check.innerHTML = workoutDone ? '&#10003;' : '';
+    document.getElementById('workout-card').classList.toggle('done', workoutDone);
+    document.getElementById('workout-check').innerHTML = workoutDone ? '&#10003;' : '';
   }
 
   // ==========================================
   //  INPUT LISTENERS
   // ==========================================
   function setupInputListeners() {
-    ['input-weight', 'input-cal', 'input-protein', 'input-water', 'input-notes'].forEach(id => {
+    ['input-cal', 'input-protein', 'input-water', 'input-notes'].forEach(id => {
       const el = document.getElementById(id);
       const clone = el.cloneNode(true);
       el.replaceWith(clone);
       clone.addEventListener('input', () => {
-        if (id === 'input-weight') updateWeightDelta();
         if (['input-cal', 'input-protein', 'input-water'].includes(id)) updateProgressBars();
         scheduleSave();
       });
@@ -1461,45 +1022,40 @@
   }
 
   // ==========================================
-  //  SAVE / SYNC
+  //  SAVE
   // ==========================================
-  function setSyncStatus(status) {
+  function setSyncStatus(s) {
     const dot = document.getElementById('sync-dot');
     const text = document.getElementById('sync-text');
     dot.className = 'sync-dot';
-    if (status === 'saving') { dot.classList.add('saving'); text.textContent = 'Saving...'; }
-    else if (status === 'error') { dot.classList.add('error'); text.textContent = 'Sync error'; }
+    if (s === 'saving') { dot.classList.add('saving'); text.textContent = 'Saving...'; }
+    else if (s === 'error') { dot.classList.add('error'); text.textContent = 'Sync error'; }
     else { text.textContent = 'Synced'; }
   }
-
-  function scheduleSave() {
-    setSyncStatus('saving');
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(saveDay, 800);
-  }
+  function scheduleSave() { setSyncStatus('saving'); clearTimeout(saveTimer); saveTimer = setTimeout(saveDay, 800); }
 
   async function saveDay() {
+    const weightEl = document.getElementById('input-weight');
+    const weightVal = weightEl ? parseFloat(weightEl.value) || null : null;
+
     const row = {
-      date: currentDate,
-      user_id: currentUser.id,
+      date: currentDate, user_id: currentUser.id,
       cal: parseInt(document.getElementById('input-cal').value) || 0,
       protein: parseInt(document.getElementById('input-protein').value) || 0,
       water: parseInt(document.getElementById('input-water').value) || 0,
-      weight: parseFloat(document.getElementById('input-weight').value) || null,
+      weight: weightVal,
       day_type: getSelectedDayType(),
       workout_done: workoutDone,
       notes: document.getElementById('input-notes').value || null,
     };
 
     const { error } = await db.from('logs').upsert(row, { onConflict: 'user_id,date' });
-
-    if (error) {
-      console.error('Save error:', error);
-      setSyncStatus('error');
-    } else {
+    if (error) { console.error('Save error:', error); setSyncStatus('error'); }
+    else {
       allLogs[currentDate] = { ...allLogs[currentDate], ...row };
       setSyncStatus('synced');
       updateStats();
+      renderSessionTracker();
     }
   }
 
@@ -1509,16 +1065,58 @@
   function updateStats() {
     const sorted = Object.values(allLogs).filter(l => l.weight).sort((a, b) => b.date.localeCompare(a.date));
     const latest = sorted[0]?.weight;
-    const sw = getStartWeight();
-    const gw = getGoalWeight();
     document.getElementById('stat-weight').textContent = latest ? latest.toFixed(1) : '--';
-    document.getElementById('stat-lost').textContent = latest ? (sw - latest).toFixed(1) : '--';
-    document.getElementById('stat-togo').textContent = latest ? (latest - gw).toFixed(1) : '--';
-
+    document.getElementById('stat-lost').textContent = latest ? (getStartWeight() - latest).toFixed(1) : '--';
+    document.getElementById('stat-togo').textContent = latest ? (latest - getGoalWeight()).toFixed(1) : '--';
     const recent = Object.values(allLogs).filter(l => l.cal > 0).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 7);
-    document.getElementById('stat-avg-cal').textContent = recent.length > 0
-      ? Math.round(recent.reduce((s, l) => s + l.cal, 0) / recent.length)
-      : '--';
+    document.getElementById('stat-avg-cal').textContent = recent.length > 0 ? Math.round(recent.reduce((s, l) => s + l.cal, 0) / recent.length) : '--';
+  }
+
+  // ==========================================
+  //  PLAN TAB
+  // ==========================================
+  function renderPlan() {
+    const container = document.getElementById('plan-content');
+    const plan = cfg().running_plan;
+
+    if (!plan || !plan.weeks) {
+      container.innerHTML = '<div class="plan-empty">No running plan yet. Go to Settings to regenerate one.</div>';
+      return;
+    }
+
+    // Figure out current week number
+    const raceDate = cfg().race_date;
+    let currentWeek = null;
+    if (raceDate && plan.total_weeks) {
+      const rd = new Date(raceDate);
+      const now = new Date(); now.setHours(0,0,0,0);
+      const daysLeft = Math.ceil((rd - now) / 86400000);
+      const weeksLeft = Math.ceil(daysLeft / 7);
+      currentWeek = plan.total_weeks - weeksLeft + 1;
+    }
+
+    let html = '';
+    if (plan.notes) {
+      html += `<div class="plan-notes">${plan.notes}</div>`;
+    }
+
+    plan.weeks.forEach(w => {
+      const isCurrent = w.week === currentWeek;
+      html += `<div class="plan-week ${isCurrent ? 'current' : ''}">
+        <div class="plan-week-header">
+          <span class="plan-week-num">Week ${w.week}${isCurrent ? ' (Current)' : ''}</span>
+          <span class="plan-week-label">${w.label}</span>
+        </div>
+        ${w.runs.map(r => `<div class="plan-run">
+          <span class="plan-run-day">${r.day.slice(0,3)}</span>
+          <span class="plan-run-type">${r.type}</span>
+          <span class="plan-run-dist">${r.distance}</span>
+          <span class="plan-run-notes">${r.notes}</span>
+        </div>`).join('')}
+      </div>`;
+    });
+
+    container.innerHTML = html;
   }
 
   // ==========================================
@@ -1531,20 +1129,12 @@
     const workoutPct = log.workout_done ? 1 : 0;
     return Math.round(((calPct + proteinPct + workoutPct) / 3) * 100);
   }
-
-  function scoreColor(score) {
-    if (score >= 80) return 'var(--green)';
-    if (score >= 60) return 'var(--amber)';
-    return 'var(--red)';
-  }
+  function scoreColor(s) { if (s >= 80) return 'var(--green)'; if (s >= 60) return 'var(--amber)'; return 'var(--red)'; }
 
   function renderHistory() {
     const list = document.getElementById('history-list');
     const logs = Object.values(allLogs).sort((a, b) => b.date.localeCompare(a.date));
-    if (logs.length === 0) {
-      list.innerHTML = '<div class="empty-state">No logs yet. Start tracking today!</div>';
-      return;
-    }
+    if (logs.length === 0) { list.innerHTML = '<div class="empty-state">No logs yet. Start tracking today!</div>'; return; }
     list.innerHTML = logs.map(log => {
       const score = calcScore(log);
       return `<div class="history-card" onclick="jumpToDay('${log.date}')">
@@ -1571,67 +1161,35 @@
   // ==========================================
   function openSettings() {
     const c = cfg();
-    const body = document.getElementById('settings-body');
-    body.innerHTML = `
+    document.getElementById('settings-body').innerHTML = `
       <div class="settings-section">
         <div class="settings-section-title">Account</div>
-        <div class="settings-row">
-          <span class="settings-row-label">Email</span>
-          <span class="settings-row-value">${currentUser.email}</span>
-        </div>
+        <div class="settings-row"><span class="settings-row-label">Email</span><span class="settings-row-value">${currentUser.email}</span></div>
       </div>
       <div class="settings-section">
         <div class="settings-section-title">Profile</div>
-        <div class="settings-row">
-          <span class="settings-row-label">Name</span>
-          <span class="settings-row-value">${c.name || '--'}</span>
-        </div>
-        <div class="settings-row">
-          <span class="settings-row-label">Event</span>
-          <span class="settings-row-value">${c.event_name || '--'}</span>
-        </div>
-        <div class="settings-row">
-          <span class="settings-row-label">Race Date</span>
-          <span class="settings-row-value">${c.race_date ? formatDate(c.race_date) : '--'}</span>
-        </div>
+        <div class="settings-row"><span class="settings-row-label">Name</span><span class="settings-row-value">${c.name || '--'}</span></div>
+        <div class="settings-row"><span class="settings-row-label">Event</span><span class="settings-row-value">${c.event_name || '--'}</span></div>
+        <div class="settings-row"><span class="settings-row-label">Race Date</span><span class="settings-row-value">${c.race_date ? formatDate(c.race_date) : '--'}</span></div>
+        <div class="settings-row"><span class="settings-row-label">Weigh-In Day</span><span class="settings-row-value">${DAY_NAMES_FULL[c.weighin_day ?? 1]}</span></div>
       </div>
       <div class="settings-section">
         <div class="settings-section-title">Weight</div>
-        <div class="settings-row">
-          <span class="settings-row-label">Start Weight</span>
-          <span class="settings-row-value">${c.start_weight || '--'} lbs</span>
-        </div>
-        <div class="settings-row">
-          <span class="settings-row-label">Goal Weight</span>
-          <span class="settings-row-value">${c.goal_weight || '--'} lbs</span>
-        </div>
+        <div class="settings-row"><span class="settings-row-label">Start Weight</span><span class="settings-row-value">${c.start_weight || '--'} lbs</span></div>
+        <div class="settings-row"><span class="settings-row-label">Goal Weight</span><span class="settings-row-value">${c.goal_weight || '--'} lbs</span></div>
       </div>
       <div class="settings-section">
         <div class="settings-section-title">Weekly Schedule</div>
         ${DAY_NAMES.map((d, i) => `<div class="settings-row"><span class="settings-row-label">${d}</span><span class="settings-row-value">${getSchedule()[i]}</span></div>`).join('')}
       </div>
       <div class="settings-section">
-        <div class="settings-section-title">Daily Targets</div>
-        ${getDayTypes().map(type => {
-          const t = getTargets()[type];
-          return `<div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:6px">
-            <span style="color:var(--orange);font-weight:600;font-size:13px">${type}</span>
-            <span class="settings-row-value" style="font-size:13px">${t.cal} cal &middot; ${t.protein}g protein &middot; ${t.water}oz water</span>
-          </div>`;
-        }).join('')}
-      </div>
-      <div class="settings-section">
         <div class="settings-section-title">Actions</div>
         <button class="settings-danger-btn" onclick="resetAndReonboard()">Reset & Start New Block</button>
         <button class="settings-secondary-btn" onclick="signOut()">Sign Out</button>
-      </div>
-    `;
+      </div>`;
     document.getElementById('settings-overlay').classList.add('active');
   }
-
-  function closeSettings() {
-    document.getElementById('settings-overlay').classList.remove('active');
-  }
+  function closeSettings() { document.getElementById('settings-overlay').classList.remove('active'); }
 
   async function resetAndReonboard() {
     if (!confirm('This will create a new training block with fresh settings. Your old logs will stay saved. Continue?')) return;
@@ -1640,16 +1198,12 @@
     userSettings = null;
     startOnboarding();
   }
-
   async function signOut() {
     await db.auth.signOut();
-    currentUser = null;
-    userSettings = null;
-    allLogs = {};
+    currentUser = null; userSettings = null; allLogs = {};
     showAuth();
   }
 
-  // --- Setup code inputs & boot ---
   setupCodeInputs();
   boot();
 </script>

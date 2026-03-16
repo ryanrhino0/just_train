@@ -1,18 +1,18 @@
 {
-  "name": "Training Log",
-  "short_name": "Training",
+  "name": "Magic Train",
+  "short_name": "Magic Train",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0a0a",
   "theme_color": "#0a0a0a",
   "icons": [
     {
-      "src": "https://fakeimg.pl/192x192/f97316/000000?text=RV&font=lobster",
+      "src": "https://fakeimg.pl/192x192/f97316/000000?text=MT&font=lobster",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "https://fakeimg.pl/512x512/f97316/000000?text=RV&font=lobster",
+      "src": "https://fakeimg.pl/512x512/f97316/000000?text=MT&font=lobster",
       "sizes": "512x512",
       "type": "image/png"
     }
