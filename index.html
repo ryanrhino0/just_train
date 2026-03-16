@@ -597,14 +597,16 @@
       <div class="progress-wrap"><div class="progress-bar"><div class="progress-fill" id="screen-time-progress" style="width:0%;background:var(--green)"></div></div></div>
     </div>
     <div class="card" id="run-stats-card" style="display:none">
-      <div class="card-header"><span class="card-title">Run Stats</span></div>
-      <div class="run-stats-inputs">
-        <div class="run-stats-row"><label>Avg HR (bpm)</label><input type="number" id="input-run-hr" placeholder="0" inputmode="numeric"></div>
-        <div class="run-stats-row"><label>Distance (mi)</label><input type="number" id="input-run-distance" placeholder="0" inputmode="decimal" step="0.1"></div>
-        <div class="run-stats-row"><label>Duration (min)</label><input type="number" id="input-run-duration" placeholder="0" inputmode="numeric"></div>
+      <div class="card-header">
+        <span class="card-title">Run Calories</span>
+        <span class="card-badge" id="run-budget-badge">+0 kcal to budget</span>
       </div>
-      <div class="run-calories-result" id="run-calories-result">--</div>
-      <div class="run-calories-label">Estimated Calories Burned</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:12px">How many calories did your run burn? (check your watch or app)</div>
+      <div class="input-row">
+        <input type="number" id="input-run-calories" placeholder="0" inputmode="numeric">
+        <span class="input-unit">kcal burned</span>
+      </div>
+      <div style="margin-top:10px;font-size:12px;color:var(--muted)">45% of your burn (<span id="run-budget-amount" style="color:var(--orange);font-weight:600">0</span> kcal) will be added to today's calorie budget.</div>
     </div>
     <div class="card workout-card" id="workout-card" onclick="toggleWorkout()">
       <div class="workout-inner"><div class="workout-check" id="workout-check"></div><span class="workout-label">Workout Completed</span></div>
@@ -1448,15 +1450,15 @@
 
       let burn = ACTIVITY_BURN[type] || 300;
 
-      // For run types, use actual run calories from calculator if available
+      // For run types, use actual entered calories burned
       if (type === 'Long Run' || type === 'Run Day') {
-        const runCalEl = document.getElementById('run-calories-result');
-        const actualRunCal = runCalEl ? parseInt(runCalEl.textContent) : 0;
-        if (actualRunCal > 0) burn = actualRunCal;
+        const runCalInput = document.getElementById('input-run-calories');
+        const actualBurn = runCalInput ? (parseInt(runCalInput.value) || 0) : 0;
+        if (actualBurn > 0) burn = actualBurn;
       }
 
       // Add 25% of burn to budget (maintains deficit while fueling recovery)
-      totalCal += Math.round(burn * 0.25);
+      totalCal += Math.round(burn * 0.45);
     });
 
     updateTargetValues(totalCal, maxProtein, maxWater);
@@ -1514,10 +1516,8 @@
     const runCard = document.getElementById('run-stats-card');
     if (hasRun) {
       runCard.style.display = '';
-      document.getElementById('input-run-hr').value = log?.run_hr ?? '';
-      document.getElementById('input-run-distance').value = log?.run_distance ?? '';
-      document.getElementById('input-run-duration').value = log?.run_duration ?? '';
-      updateRunCalories();
+      document.getElementById('input-run-calories').value = log?.run_calories ?? '';
+      updateRunBudget();
     } else {
       runCard.style.display = 'none';
     }
@@ -1571,15 +1571,13 @@
       stEl.replaceWith(stClone);
       stClone.addEventListener('input', () => { updateScreenTimeProgress(); scheduleSave(); });
     }
-    // Run stats listeners
-    ['input-run-hr', 'input-run-distance', 'input-run-duration'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) {
-        const clone = el.cloneNode(true);
-        el.replaceWith(clone);
-        clone.addEventListener('input', () => { updateRunCalories(); scheduleSave(); });
-      }
-    });
+    // Run calories listener
+    const runCalEl = document.getElementById('input-run-calories');
+    if (runCalEl) {
+      const clone = runCalEl.cloneNode(true);
+      runCalEl.replaceWith(clone);
+      clone.addEventListener('input', () => { updateRunBudget(); scheduleSave(); });
+    }
   }
 
   // ==========================================
@@ -1602,22 +1600,13 @@
   // ==========================================
   //  RUN CALORIE CALCULATOR
   // ==========================================
-  function updateRunCalories() {
-    const hr = parseFloat(document.getElementById('input-run-hr')?.value) || 0;
-    const dist = parseFloat(document.getElementById('input-run-distance')?.value) || 0;
-    const resultEl = document.getElementById('run-calories-result');
-    if (!resultEl) return;
-
-    if (dist <= 0) { resultEl.textContent = '--'; return; }
-
-    // Get user weight: latest logged weight or start_weight
-    const sorted = Object.values(allLogs).filter(l => l.weight).sort((a, b) => b.date.localeCompare(a.date));
-    const weight = sorted.length > 0 ? sorted[0].weight : getStartWeight();
-
-    let calories = 0.75 * weight * dist;
-    if (hr > 0) calories *= (hr / 140);
-    resultEl.textContent = Math.round(calories);
-    // Recalculate calorie budget with actual run burn
+  function updateRunBudget() {
+    const burned = parseInt(document.getElementById('input-run-calories')?.value) || 0;
+    const bonus = Math.round(burned * 0.45);
+    const amountEl = document.getElementById('run-budget-amount');
+    const badgeEl = document.getElementById('run-budget-badge');
+    if (amountEl) amountEl.textContent = bonus;
+    if (badgeEl) badgeEl.textContent = '+' + bonus + ' kcal to budget';
     updateTargetsFromSelected();
   }
 
@@ -1640,14 +1629,8 @@
 
     const screenTimeEl = document.getElementById('input-screen-time');
     const screenTimeVal = screenTimeEl ? (parseInt(screenTimeEl.value) || null) : null;
-    const runHrEl = document.getElementById('input-run-hr');
-    const runDistEl = document.getElementById('input-run-distance');
-    const runDurEl = document.getElementById('input-run-duration');
-    const runCalEl = document.getElementById('run-calories-result');
-    const runHr = runHrEl ? (parseInt(runHrEl.value) || null) : null;
-    const runDist = runDistEl ? (parseFloat(runDistEl.value) || null) : null;
-    const runDur = runDurEl ? (parseInt(runDurEl.value) || null) : null;
-    const runCals = runCalEl ? (parseInt(runCalEl.textContent) || null) : null;
+    const runCalInput = document.getElementById('input-run-calories');
+    const runCals = runCalInput ? (parseInt(runCalInput.value) || null) : null;
 
     const row = {
       date: currentDate, user_id: currentUser.id,
@@ -1659,9 +1642,6 @@
       workout_done: workoutDone,
       notes: document.getElementById('input-notes').value || null,
       screen_time: screenTimeVal,
-      run_hr: runHr,
-      run_distance: runDist,
-      run_duration: runDur,
       run_calories: runCals,
       day_closed: dayClosed,
     };
