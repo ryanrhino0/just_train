@@ -610,7 +610,7 @@
     const btn = document.getElementById('auth-verify-btn');
     const msg = document.getElementById('auth-code-msg');
     btn.disabled = true; btn.textContent = 'Verifying...';
-    const { data, error } = await db.auth.verifyOtp({ email: pendingEmail, token, type: 'email' });
+    const { data, error } = await db.auth.verifyOtp({ email: pendingEmail, token, type: 'magiclink' });
     if (error) {
       msg.style.color = 'var(--red)'; msg.textContent = error.message;
       btn.disabled = false; btn.textContent = 'Verify';
