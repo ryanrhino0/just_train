@@ -11,9 +11,9 @@ export default async (req) => {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
   }
 
-  const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
-  const supabaseUrl = Deno.env.get('SUPABASE_URL') || 'https://vfcfdybqmawirygporic.supabase.co';
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_KEY');
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const supabaseUrl = process.env.SUPABASE_URL || 'https://vfcfdybqmawirygporic.supabase.co';
+  const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 
   if (!apiKey) {
     return new Response(JSON.stringify({ error: 'API key not configured' }), { status: 500 });
