@@ -302,9 +302,28 @@
     }
     .celebration-text {
       font-family: 'DM Mono', monospace; font-size: 24px; font-weight: 500;
-      color: #fff; margin-bottom: 32px; animation: fadeIn 0.5s ease 0.3s both;
+      color: #fff; margin-bottom: 24px; animation: fadeIn 0.5s ease 0.3s both;
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .celeb-stats { animation: fadeIn 0.5s ease 0.4s both; margin-bottom: 28px; }
+    .celeb-deficit {
+      font-family: 'DM Mono', monospace; font-size: 48px; font-weight: 500;
+      color: var(--green); line-height: 1; margin-bottom: 4px;
+    }
+    .celeb-deficit.over { color: var(--red); }
+    .celeb-deficit-label { font-size: 14px; color: var(--muted); margin-bottom: 16px; }
+    .celeb-stat-row {
+      display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;
+    }
+    .celeb-stat-item {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+      padding: 10px 16px; text-align: center; min-width: 80px;
+    }
+    .celeb-stat-val {
+      font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; color: #fff;
+    }
+    .celeb-stat-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
 
     /* Confetti */
     .confetti-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 201; overflow: hidden; }
@@ -651,6 +670,7 @@
   <div class="celebration-content">
     <div class="celebration-check" id="celebration-check">&#10003;</div>
     <div class="celebration-text" id="celebration-text">Day Complete!</div>
+    <div id="celebration-stats"></div>
     <div class="celebration-calendar" id="celebration-calendar"></div>
     <button class="ob-btn ob-btn-next" onclick="closeCelebration()" style="margin-top:24px;max-width:200px">Done</button>
   </div>
@@ -1449,6 +1469,7 @@
         togglePill(type);
         updateTargetsFromSelected();
         updateRunStatsVisibility();
+        renderRunPlanCard();
         scheduleSave();
       });
       container.appendChild(btn);
@@ -2019,8 +2040,105 @@
     renderCloseDayButton();
     // Show celebration
     document.getElementById('celebration-overlay').classList.add('active');
-    launchConfetti();
+    // Check if under budget for confetti intensity
+    const todayCal = parseInt(document.getElementById('input-cal').value) || 0;
+    const todayTarget = parseInt(document.getElementById('target-cal').textContent) || 0;
+    const underBudget = todayCal <= todayTarget;
+
+    if (underBudget) {
+      launchConfetti(60); // big celebration
+      document.getElementById('celebration-text').textContent = 'Day Complete!';
+      document.getElementById('celebration-check').style.background = 'var(--green)';
+    } else {
+      launchConfetti(10); // small confetti
+      document.getElementById('celebration-text').textContent = 'Day Logged';
+      document.getElementById('celebration-check').style.background = 'var(--amber)';
+    }
+    renderCelebrationStats();
     renderCelebrationCalendar();
+  }
+
+  function renderCelebrationStats() {
+    const statsEl = document.getElementById('celebration-stats');
+    if (!statsEl) return;
+
+    // Get today's intake
+    const cal = parseInt(document.getElementById('input-cal').value) || 0;
+    const protein = parseInt(document.getElementById('input-protein').value) || 0;
+    const water = parseInt(document.getElementById('input-water').value) || 0;
+
+    // Get targets (from displayed values which are already stacked)
+    const targetCal = parseInt(document.getElementById('target-cal').textContent) || 0;
+    const targetProtein = parseInt(document.getElementById('target-protein').textContent) || 0;
+    const targetWater = parseInt(document.getElementById('target-water').textContent) || 0;
+
+    // Calculate deficit/surplus
+    const deficit = targetCal - cal;
+    const isDeficit = deficit > 0;
+
+    // Estimate TDEE (maintenance) — rough estimate: target is already a cut, real maintenance is higher
+    // Use a simple estimate: for weight loss the target is already below maintenance
+    // So actual deficit from maintenance is even bigger
+    // Let's show deficit from target (how much under budget you came in)
+
+    const deficitText = isDeficit ? `-${deficit}` : `+${Math.abs(deficit)}`;
+    const deficitLabel = isDeficit ? 'calories under budget' : 'calories over budget';
+
+    // Run calories burned today
+    const runBurned = parseInt(document.getElementById('input-run-calories')?.value) || 0;
+
+    // Activities
+    const activities = getSelectedDayTypes().filter(t => t !== 'Rest');
+    const activityStr = activities.length ? activities.join(' + ') : 'Rest Day';
+
+    // Protein hit %
+    const proteinPct = targetProtein ? Math.round((protein / targetProtein) * 100) : 0;
+    const waterPct = targetWater ? Math.round((water / targetWater) * 100) : 0;
+
+    let html = '<div class="celeb-stats">';
+
+    // Big deficit number
+    html += `<div class="celeb-deficit ${isDeficit ? '' : 'over'}">${deficitText}</div>`;
+    html += `<div class="celeb-deficit-label">${deficitLabel}</div>`;
+
+    // Stat cards
+    html += '<div class="celeb-stat-row">';
+    html += `<div class="celeb-stat-item"><div class="celeb-stat-val">${cal}</div><div class="celeb-stat-lbl">Calories</div></div>`;
+    html += `<div class="celeb-stat-item"><div class="celeb-stat-val" style="color:${proteinPct >= 80 ? 'var(--green)' : proteinPct >= 50 ? 'var(--amber)' : 'var(--red)'}">${proteinPct}%</div><div class="celeb-stat-lbl">Protein</div></div>`;
+    html += `<div class="celeb-stat-item"><div class="celeb-stat-val" style="color:${waterPct >= 80 ? 'var(--green)' : waterPct >= 50 ? 'var(--amber)' : 'var(--red)'}">${waterPct}%</div><div class="celeb-stat-lbl">Water</div></div>`;
+    if (runBurned > 0) {
+      html += `<div class="celeb-stat-item"><div class="celeb-stat-val" style="color:var(--orange)">${runBurned}</div><div class="celeb-stat-lbl">Run Burn</div></div>`;
+    }
+    html += '</div>';
+
+    // Weekly projection
+    const weeklyDeficit = deficit * 7;
+    const weeklyLbs = (weeklyDeficit / 3500).toFixed(2); // 3500 cal ≈ 1 lb
+    const projColor = isDeficit ? 'var(--green)' : 'var(--red)';
+
+    if (isDeficit) {
+      html += `
+        <div style="margin-top:20px;padding:16px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:12px;animation:fadeIn 0.5s ease 0.6s both">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:6px">If every day looked like today...</div>
+          <div style="font-family:'DM Mono',monospace;font-size:28px;color:var(--green);font-weight:500;margin-bottom:4px">-${weeklyLbs} lbs/week</div>
+          <div style="font-size:12px;color:var(--green)">${Math.abs(weeklyDeficit).toLocaleString()} cal weekly deficit</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px">You're crushing it. Keep this up. 💪</div>
+        </div>`;
+    } else if (deficit < 0) {
+      html += `
+        <div style="margin-top:20px;padding:16px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:12px;animation:fadeIn 0.5s ease 0.6s both">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Heads up — at this pace...</div>
+          <div style="font-family:'DM Mono',monospace;font-size:28px;color:var(--red);font-weight:500;margin-bottom:4px">+${Math.abs(weeklyLbs)} lbs/week</div>
+          <div style="font-size:12px;color:var(--red)">${Math.abs(weeklyDeficit).toLocaleString()} cal weekly surplus</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px">Tomorrow's a new day. Tighten up and bounce back.</div>
+        </div>`;
+    }
+
+    // Activity summary
+    html += `<div style="margin-top:12px;font-size:13px;color:var(--muted)">${activityStr}</div>`;
+
+    html += '</div>';
+    statsEl.innerHTML = html;
   }
 
   function renderCelebrationCalendar() {
@@ -2057,14 +2175,14 @@
     container.innerHTML = html;
   }
 
-  function launchConfetti() {
+  function launchConfetti(count = 30) {
     const container = document.createElement('div');
     container.className = 'confetti-container';
     container.id = 'confetti-container';
     document.body.appendChild(container);
 
     const colors = ['var(--orange)', 'var(--green)', 'var(--cyan)', 'var(--indigo)', 'var(--amber)'];
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < count; i++) {
       const piece = document.createElement('div');
       piece.className = 'confetti-piece';
       const size = 8 + Math.random() * 6;
