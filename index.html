@@ -448,8 +448,30 @@
     <div class="ob-title">Goal Details</div>
     <div class="ob-subtitle">Tell us more about what you're going after.</div>
 
+    <!-- Always visible — needed for BMR -->
+    <div class="ob-field">
+      <label class="ob-label">Gender</label>
+      <select class="ob-select" id="ob-gender">
+        <option value="male" selected>Male</option>
+        <option value="female">Female</option>
+      </select>
+    </div>
+    <div class="ob-field"><label class="ob-label">Height (inches)</label><input class="ob-input" id="ob-height" type="number" inputmode="numeric" placeholder="e.g. 70 (5'10)"></div>
+    <div class="ob-field"><label class="ob-label">Age</label><input class="ob-input" id="ob-age" type="number" inputmode="numeric" placeholder="e.g. 28"></div>
+    <div class="ob-field"><label class="ob-label">Current Weight (lbs)</label><input class="ob-input" id="ob-start-weight" type="number" inputmode="decimal" placeholder="200"></div>
+
+    <!-- BMR estimate (updates live) -->
+    <div id="ob-bmr-display" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:20px;display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Estimated BMR</div>
+          <div style="font-family:'DM Mono',monospace;font-size:24px;color:var(--orange);margin-top:2px" id="ob-bmr-value">--</div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);text-align:right;max-width:160px">cal/day at rest. You can edit this in settings later.</div>
+      </div>
+    </div>
+
     <div id="ob-goal-weight-section" style="display:none">
-      <div class="ob-field"><label class="ob-label">Current Weight (lbs)</label><input class="ob-input" id="ob-start-weight" type="number" inputmode="decimal" placeholder="200"></div>
       <div class="ob-field"><label class="ob-label">Goal Weight (lbs)</label><input class="ob-input" id="ob-goal-weight" type="number" inputmode="decimal" placeholder="180"></div>
       <div class="ob-field">
         <label class="ob-label">Weekly Weigh-In Day</label>
@@ -941,6 +963,32 @@
     document.getElementById('ob-goal-pr-section').style.display = selectedGoals.has('gym_pr') ? 'block' : 'none';
     document.getElementById('ob-goal-other-section').style.display = selectedGoals.has('other') ? 'block' : 'none';
     document.getElementById('ob-goal-none-msg').style.display = selectedGoals.size === 0 ? 'block' : 'none';
+    calcObBMR();
+  }
+
+  // Mifflin-St Jeor BMR formula
+  function calculateBMR(gender, weightLbs, heightIn, age) {
+    const weightKg = weightLbs * 0.453592;
+    const heightCm = heightIn * 2.54;
+    if (gender === 'female') return Math.round(10 * weightKg + 6.25 * heightCm - 5 * age - 161);
+    return Math.round(10 * weightKg + 6.25 * heightCm - 5 * age + 5);
+  }
+
+  function calcObBMR() {
+    const gender = document.getElementById('ob-gender').value;
+    const weight = parseFloat(document.getElementById('ob-start-weight').value) || 0;
+    const height = parseFloat(document.getElementById('ob-height').value) || 0;
+    const age = parseInt(document.getElementById('ob-age').value) || 0;
+    const display = document.getElementById('ob-bmr-display');
+    const valEl = document.getElementById('ob-bmr-value');
+
+    if (weight > 0 && height > 0 && age > 0) {
+      const bmr = calculateBMR(gender, weight, height, age);
+      valEl.textContent = bmr.toLocaleString();
+      display.style.display = 'block';
+    } else {
+      display.style.display = 'none';
+    }
   }
 
   function hasRunDays() {
@@ -954,8 +1002,9 @@
   }
 
   function getObSteps() {
-    // Steps: 0=Name+Goals, 1=Goal Details, 2=Schedule, 3=Targets, 4=Running Plan (conditional)
-    const steps = [0, 1, 2, 3];
+    // Steps: 0=Name+Goals, 1=Goal Details, 2=Schedule, 4=Running Plan (conditional)
+    // Step 3 (Targets) removed — AI generates them silently during finish
+    const steps = [0, 1, 2];
     if (hasRunDays() && selectedGoals.has('event')) steps.push(4);
     return steps;
   }
@@ -967,6 +1016,16 @@
     buildObDots(); buildObSchedule(); buildObTargets(); showObStep(0);
     document.getElementById('ob-name').value = '';
     document.getElementById('ob-start-weight').value = '';
+    document.getElementById('ob-height').value = '';
+    document.getElementById('ob-age').value = '';
+    document.getElementById('ob-gender').value = 'male';
+    document.getElementById('ob-bmr-display').style.display = 'none';
+    // BMR live update listeners
+    ['ob-gender', 'ob-start-weight', 'ob-height', 'ob-age'].forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener('input', calcObBMR);
+      el.addEventListener('change', calcObBMR);
+    });
     document.getElementById('ob-goal-weight').value = '';
     document.getElementById('ob-race-date').value = '';
     document.getElementById('ob-race-type').value = 'Half Marathon';
@@ -1203,7 +1262,11 @@
     const raceType = selectedGoals.has('event') ? (document.getElementById('ob-race-type').value || null) : null;
     const recentTime = selectedGoals.has('event') ? (document.getElementById('ob-recent-time').value.trim() || null) : null;
     const goalTime = selectedGoals.has('event') ? (document.getElementById('ob-goal-time').value.trim() || null) : null;
-    const startWeight = selectedGoals.has('weight_loss') ? (parseFloat(document.getElementById('ob-start-weight').value) || null) : null;
+    const gender = document.getElementById('ob-gender').value;
+    const height = parseFloat(document.getElementById('ob-height').value) || null;
+    const age = parseInt(document.getElementById('ob-age').value) || null;
+    const startWeight = parseFloat(document.getElementById('ob-start-weight').value) || null;
+    const bmr = (startWeight && height && age) ? calculateBMR(gender, startWeight, height, age) : 1750;
     const goalWeight = selectedGoals.has('weight_loss') ? (parseFloat(document.getElementById('ob-goal-weight').value) || null) : null;
     const weighinDay = selectedGoals.has('weight_loss') ? parseInt(document.getElementById('ob-weighin-day').value) : null;
     const prGoal = selectedGoals.has('gym_pr') ? (document.getElementById('ob-pr-goal').value.trim() || null) : null;
@@ -1228,7 +1291,7 @@
     });
 
     const timezone = document.getElementById('ob-timezone').value;
-    const config = { name, goals, race_date: raceDate, event_name: eventName, race_type: raceType, recent_time: recentTime, goal_time: goalTime, start_weight: startWeight, goal_weight: goalWeight, weighin_day: weighinDay, pr_goal: prGoal, other_goal: otherGoal, week_schedule: schedule, targets, running_plan: generatedPlan, track_screen_time: obTrackScreenTime, timezone };
+    const config = { name, goals, gender, height, age, bmr, race_date: raceDate, event_name: eventName, race_type: raceType, recent_time: recentTime, goal_time: goalTime, start_weight: startWeight, goal_weight: goalWeight, weighin_day: weighinDay, pr_goal: prGoal, other_goal: otherGoal, week_schedule: schedule, targets, running_plan: generatedPlan, track_screen_time: obTrackScreenTime, timezone };
 
     const { error } = await db.from('settings').upsert({ user_id: currentUser.id, config }, { onConflict: 'user_id' });
     if (error) { console.error('Settings save error:', error); return; }
@@ -2070,24 +2133,54 @@
     }
     html += `</div>`;
 
+    // BMR section — always visible
+    html += `
+      <div class="settings-section">
+        <div class="settings-section-title">Body Stats & BMR</div>
+        <div class="settings-row"><span class="settings-row-label">Gender</span><span class="settings-row-value">${c.gender || '--'}</span></div>
+        <div class="settings-row"><span class="settings-row-label">Height</span><span class="settings-row-value">${c.height ? c.height + ' in' : '--'}</span></div>
+        <div class="settings-row"><span class="settings-row-label">Age</span><span class="settings-row-value">${c.age || '--'}</span></div>
+        <div class="settings-row"><span class="settings-row-label">Weight</span><span class="settings-row-value">${c.start_weight || '--'} lbs</span></div>
+        <div class="settings-row">
+          <span class="settings-row-label">BMR (cal/day)</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="number" id="settings-bmr" value="${c.bmr || ''}" inputmode="numeric" style="width:80px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--orange);font-family:'DM Mono',monospace;font-size:14px;padding:6px 8px;text-align:center;outline:none">
+            <button onclick="saveBMR()" style="padding:6px 12px;border-radius:8px;background:var(--orange);color:#000;font-size:12px;font-weight:600;border:none;cursor:pointer">Save</button>
+          </div>
+        </div>
+      </div>`;
+
     if (goals.includes('weight_loss')) {
       html += `
       <div class="settings-section">
-        <div class="settings-section-title">Weight</div>
-        <div class="settings-row"><span class="settings-row-label">Start Weight</span><span class="settings-row-value">${c.start_weight || '--'} lbs</span></div>
+        <div class="settings-section-title">Weight Goal</div>
         <div class="settings-row"><span class="settings-row-label">Goal Weight</span><span class="settings-row-value">${c.goal_weight || '--'} lbs</span></div>
         <div class="settings-row"><span class="settings-row-label">Weigh-In Day</span><span class="settings-row-value">${DAY_NAMES_FULL[c.weighin_day ?? 1]}</span></div>
       </div>`;
     }
 
+    // Editable weekly schedule
+    const allDayTypes = DEFAULT_DAY_TYPES;
     html += `
       <div class="settings-section">
         <div class="settings-section-title">Weekly Schedule</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px;padding:0 4px">
+          <span style="width:36px"></span>
+          <span style="flex:1;text-align:center;font-size:10px;color:var(--muted);text-transform:uppercase">Morning</span>
+          <span style="flex:1;text-align:center;font-size:10px;color:var(--muted);text-transform:uppercase">Evening</span>
+        </div>
         ${DAY_NAMES.map((d, i) => {
           const dayActs = getSchedule()[i];
-          const display = Array.isArray(dayActs) ? dayActs.join(' + ') : dayActs;
-          return `<div class="settings-row"><span class="settings-row-label">${d}</span><span class="settings-row-value">${display}</span></div>`;
+          const am = Array.isArray(dayActs) ? dayActs[0] : dayActs;
+          const pm = Array.isArray(dayActs) && dayActs.length > 1 ? dayActs[1] : 'Rest';
+          const opts = (sel) => allDayTypes.map(t => `<option value="${t}" ${t === sel ? 'selected' : ''}>${t}</option>`).join('');
+          return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span style="font-family:'DM Mono',monospace;font-size:12px;color:#fff;width:36px">${d}</span>
+            <select class="settings-sched" data-day="${i}" data-slot="0" style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:12px;padding:8px;outline:none;appearance:none">${opts(am)}</select>
+            <select class="settings-sched" data-day="${i}" data-slot="1" style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:12px;padding:8px;outline:none;appearance:none">${opts(pm)}</select>
+          </div>`;
         }).join('')}
+        <button onclick="saveSchedule()" style="width:100%;padding:12px;border-radius:10px;background:var(--orange);color:#000;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;border:none;cursor:pointer;margin-top:8px">Save Schedule</button>
       </div>
       <div class="settings-section">
         <div class="settings-section-title">Tracking</div>
@@ -2103,6 +2196,29 @@
     document.getElementById('settings-overlay').classList.add('active');
   }
   function closeSettings() { document.getElementById('settings-overlay').classList.remove('active'); }
+
+  async function saveBMR() {
+    const bmr = parseInt(document.getElementById('settings-bmr').value) || null;
+    if (!bmr) return;
+    cfg().bmr = bmr;
+    await db.from('settings').update({ config: cfg() }).eq('user_id', currentUser.id);
+    alert('BMR updated to ' + bmr + ' cal/day');
+  }
+
+  async function saveSchedule() {
+    const schedule = [];
+    for (let i = 0; i < 7; i++) {
+      const am = document.querySelector(`.settings-sched[data-day="${i}"][data-slot="0"]`).value;
+      const pm = document.querySelector(`.settings-sched[data-day="${i}"][data-slot="1"]`).value;
+      const day = [am];
+      if (pm !== 'Rest') day.push(pm);
+      schedule.push(day);
+    }
+    cfg().week_schedule = schedule;
+    await db.from('settings').update({ config: cfg() }).eq('user_id', currentUser.id);
+    renderSessionTracker();
+    alert('Schedule updated!');
+  }
 
   async function resetAndReonboard() {
     if (!confirm('This will create a new training block with fresh settings. Your old logs will stay saved. Continue?')) return;
@@ -2178,7 +2294,7 @@
 
     // REAL calories burned: rest baseline (BMR proxy) + 100% of ALL activity burns
     const targets = getTargets();
-    const restCal = (targets['Rest'] || { cal: 1750 }).cal;
+    const restCal = cfg().bmr || (targets['Rest'] || { cal: 1750 }).cal;
     const selected = getSelectedDayTypes().filter(t => t !== 'Rest');
     const runBurned = parseInt(document.getElementById('input-run-calories')?.value) || 0;
 
