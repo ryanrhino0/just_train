@@ -2137,17 +2137,31 @@
     html += `
       <div class="settings-section">
         <div class="settings-section-title">Body Stats & BMR</div>
-        <div class="settings-row"><span class="settings-row-label">Gender</span><span class="settings-row-value">${c.gender || '--'}</span></div>
-        <div class="settings-row"><span class="settings-row-label">Height</span><span class="settings-row-value">${c.height ? c.height + ' in' : '--'}</span></div>
-        <div class="settings-row"><span class="settings-row-label">Age</span><span class="settings-row-value">${c.age || '--'}</span></div>
-        <div class="settings-row"><span class="settings-row-label">Weight</span><span class="settings-row-value">${c.start_weight || '--'} lbs</span></div>
+        <div class="settings-row">
+          <span class="settings-row-label">Gender</span>
+          <select id="settings-gender" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--orange);font-size:13px;padding:6px 10px;outline:none;appearance:none">
+            <option value="male" ${c.gender === 'male' ? 'selected' : ''}>Male</option>
+            <option value="female" ${c.gender === 'female' ? 'selected' : ''}>Female</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <span class="settings-row-label">Height (in)</span>
+          <input type="number" id="settings-height" value="${c.height || ''}" inputmode="numeric" style="width:70px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--orange);font-family:'DM Mono',monospace;font-size:14px;padding:6px 8px;text-align:center;outline:none">
+        </div>
+        <div class="settings-row">
+          <span class="settings-row-label">Age</span>
+          <input type="number" id="settings-age" value="${c.age || ''}" inputmode="numeric" style="width:70px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--orange);font-family:'DM Mono',monospace;font-size:14px;padding:6px 8px;text-align:center;outline:none">
+        </div>
+        <div class="settings-row">
+          <span class="settings-row-label">Weight (lbs)</span>
+          <input type="number" id="settings-weight" value="${c.start_weight || ''}" inputmode="decimal" style="width:70px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--orange);font-family:'DM Mono',monospace;font-size:14px;padding:6px 8px;text-align:center;outline:none">
+        </div>
         <div class="settings-row">
           <span class="settings-row-label">BMR (cal/day)</span>
-          <div style="display:flex;align-items:center;gap:8px">
-            <input type="number" id="settings-bmr" value="${c.bmr || ''}" inputmode="numeric" style="width:80px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--orange);font-family:'DM Mono',monospace;font-size:14px;padding:6px 8px;text-align:center;outline:none">
-            <button onclick="saveBMR()" style="padding:6px 12px;border-radius:8px;background:var(--orange);color:#000;font-size:12px;font-weight:600;border:none;cursor:pointer">Save</button>
-          </div>
+          <input type="number" id="settings-bmr" value="${c.bmr || ''}" inputmode="numeric" style="width:80px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--orange);font-family:'DM Mono',monospace;font-size:14px;padding:6px 8px;text-align:center;outline:none">
         </div>
+        <button onclick="recalcSettingsBMR()" style="width:100%;padding:10px;border-radius:8px;background:none;border:1px solid var(--border);color:var(--muted);font-size:12px;cursor:pointer;margin-top:4px;margin-bottom:8px">Recalculate BMR from stats above</button>
+        <button onclick="saveBodyStats()" style="width:100%;padding:12px;border-radius:10px;background:var(--orange);color:#000;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;border:none;cursor:pointer">Save Body Stats</button>
       </div>`;
 
     if (goals.includes('weight_loss')) {
@@ -2197,12 +2211,26 @@
   }
   function closeSettings() { document.getElementById('settings-overlay').classList.remove('active'); }
 
-  async function saveBMR() {
-    const bmr = parseInt(document.getElementById('settings-bmr').value) || null;
-    if (!bmr) return;
-    cfg().bmr = bmr;
-    await db.from('settings').update({ config: cfg() }).eq('user_id', currentUser.id);
-    alert('BMR updated to ' + bmr + ' cal/day');
+  function recalcSettingsBMR() {
+    const gender = document.getElementById('settings-gender').value;
+    const weight = parseFloat(document.getElementById('settings-weight').value) || 0;
+    const height = parseFloat(document.getElementById('settings-height').value) || 0;
+    const age = parseInt(document.getElementById('settings-age').value) || 0;
+    if (weight && height && age) {
+      document.getElementById('settings-bmr').value = calculateBMR(gender, weight, height, age);
+    }
+  }
+
+  async function saveBodyStats() {
+    const c = cfg();
+    c.gender = document.getElementById('settings-gender').value;
+    c.height = parseFloat(document.getElementById('settings-height').value) || null;
+    c.age = parseInt(document.getElementById('settings-age').value) || null;
+    c.start_weight = parseFloat(document.getElementById('settings-weight').value) || c.start_weight;
+    c.bmr = parseInt(document.getElementById('settings-bmr').value) || c.bmr;
+    await db.from('settings').update({ config: c }).eq('user_id', currentUser.id);
+    updateStats();
+    alert('Body stats saved!');
   }
 
   async function saveSchedule() {
