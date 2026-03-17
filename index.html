@@ -1985,7 +1985,8 @@
     let bestCal = 0;
     types.forEach(type => { const tt = targets[type]; if (tt && tt.cal > bestCal) { bestCal = tt.cal; best = type; } });
     const t = targets[best] || targets[getDayTypes()[0]];
-    const calPct = t.cal ? Math.min(1, log.cal / t.cal) : 0;
+    // Under calories is fine (deficit is the goal), over is penalized
+    const calPct = t.cal ? (log.cal <= t.cal ? 1 : Math.max(0, 1 - (log.cal - t.cal) / t.cal)) : 1;
     const proteinPct = t.protein ? Math.min(1, log.protein / t.protein) : 0;
     const workoutPct = log.workout_done ? 1 : 0;
     return Math.round(((calPct + proteinPct + workoutPct) / 3) * 100);
@@ -2105,7 +2106,7 @@
     const area = document.getElementById('close-day-area');
     if (!area) return;
     if (dayClosed) {
-      area.innerHTML = '<div style="text-align:center;padding:16px;color:var(--green);font-size:14px;font-weight:600">&#10003; Day logged and closed</div>';
+      area.innerHTML = '<div style="text-align:center;padding:16px"><div style="color:var(--green);font-size:14px;font-weight:600">&#10003; Day logged and closed</div><div style="color:var(--muted);font-size:12px;margin-top:4px">Any edits made to this page will automatically save and stay in history</div></div>';
     } else {
       area.innerHTML = `<button id="close-day-btn" onclick="closeTheDay()" style="
         width:100%; padding:20px; border-radius:16px; border:2px solid var(--green);
@@ -2148,59 +2149,54 @@
     const statsEl = document.getElementById('celebration-stats');
     if (!statsEl) return;
 
-    // Get today's intake
+    // What you ate
     const cal = parseInt(document.getElementById('input-cal').value) || 0;
     const protein = parseInt(document.getElementById('input-protein').value) || 0;
     const water = parseInt(document.getElementById('input-water').value) || 0;
-
-    // Get targets (from displayed values which are already stacked)
-    const targetCal = parseInt(document.getElementById('target-cal').textContent) || 0;
     const targetProtein = parseInt(document.getElementById('target-protein').textContent) || 0;
     const targetWater = parseInt(document.getElementById('target-water').textContent) || 0;
 
-    // Calculate deficit/surplus
-    const deficit = targetCal - cal;
-    const isDeficit = deficit > 0;
-
-    // Estimate TDEE (maintenance) — rough estimate: target is already a cut, real maintenance is higher
-    // Use a simple estimate: for weight loss the target is already below maintenance
-    // So actual deficit from maintenance is even bigger
-    // Let's show deficit from target (how much under budget you came in)
-
-    const deficitText = isDeficit ? `-${deficit}` : `+${Math.abs(deficit)}`;
-    const deficitLabel = isDeficit ? 'calories under budget' : 'calories over budget';
-
-    // Run calories burned today
+    // REAL calories burned: rest baseline (BMR proxy) + 100% of ALL activity burns
+    const targets = getTargets();
+    const restCal = (targets['Rest'] || { cal: 1750 }).cal;
+    const selected = getSelectedDayTypes().filter(t => t !== 'Rest');
     const runBurned = parseInt(document.getElementById('input-run-calories')?.value) || 0;
 
-    // Activities
-    const activities = getSelectedDayTypes().filter(t => t !== 'Rest');
-    const activityStr = activities.length ? activities.join(' + ') : 'Rest Day';
+    let totalBurned = restCal;
+    selected.forEach(type => {
+      if (type === 'Run Day' || type === 'Long Run') {
+        totalBurned += runBurned > 0 ? runBurned : (ACTIVITY_BURN[type] || 0);
+      } else {
+        totalBurned += ACTIVITY_BURN[type] || 0;
+      }
+    });
 
-    // Protein hit %
+    // Real deficit = total burned - what you ate
+    const deficit = totalBurned - cal;
+    const isDeficit = deficit > 0;
+
+    const deficitText = isDeficit ? `-${deficit.toLocaleString()}` : `+${Math.abs(deficit).toLocaleString()}`;
+    const deficitLabel = isDeficit ? 'calorie deficit today' : 'calorie surplus today';
+
+    const activities = selected.length ? selected.join(' + ') : 'Rest Day';
     const proteinPct = targetProtein ? Math.round((protein / targetProtein) * 100) : 0;
     const waterPct = targetWater ? Math.round((water / targetWater) * 100) : 0;
 
     let html = '<div class="celeb-stats">';
 
-    // Big deficit number
     html += `<div class="celeb-deficit ${isDeficit ? '' : 'over'}">${deficitText}</div>`;
     html += `<div class="celeb-deficit-label">${deficitLabel}</div>`;
+    html += `<div style="font-size:12px;color:var(--muted);margin-bottom:16px">${totalBurned.toLocaleString()} burned (${restCal} base${selected.length ? ' + ' + (totalBurned - restCal) + ' activity' : ''}) &minus; ${cal.toLocaleString()} eaten</div>`;
 
-    // Stat cards
     html += '<div class="celeb-stat-row">';
-    html += `<div class="celeb-stat-item"><div class="celeb-stat-val">${cal}</div><div class="celeb-stat-lbl">Calories</div></div>`;
+    html += `<div class="celeb-stat-item"><div class="celeb-stat-val">${cal.toLocaleString()}</div><div class="celeb-stat-lbl">Eaten</div></div>`;
+    html += `<div class="celeb-stat-item"><div class="celeb-stat-val" style="color:var(--orange)">${totalBurned.toLocaleString()}</div><div class="celeb-stat-lbl">Burned</div></div>`;
     html += `<div class="celeb-stat-item"><div class="celeb-stat-val" style="color:${proteinPct >= 80 ? 'var(--green)' : proteinPct >= 50 ? 'var(--amber)' : 'var(--red)'}">${proteinPct}%</div><div class="celeb-stat-lbl">Protein</div></div>`;
     html += `<div class="celeb-stat-item"><div class="celeb-stat-val" style="color:${waterPct >= 80 ? 'var(--green)' : waterPct >= 50 ? 'var(--amber)' : 'var(--red)'}">${waterPct}%</div><div class="celeb-stat-lbl">Water</div></div>`;
-    if (runBurned > 0) {
-      html += `<div class="celeb-stat-item"><div class="celeb-stat-val" style="color:var(--orange)">${runBurned}</div><div class="celeb-stat-lbl">Run Burn</div></div>`;
-    }
     html += '</div>';
 
-    // Weekly projection
     const weeklyDeficit = deficit * 7;
-    const weeklyLbs = (weeklyDeficit / 3500).toFixed(2); // 3500 cal ≈ 1 lb
-    const projColor = isDeficit ? 'var(--green)' : 'var(--red)';
+    const weeklyLbs = (Math.abs(weeklyDeficit) / 3500).toFixed(2);
 
     if (isDeficit) {
       html += `
@@ -2208,21 +2204,19 @@
           <div style="font-size:13px;color:var(--muted);margin-bottom:6px">If every day looked like today...</div>
           <div style="font-family:'DM Mono',monospace;font-size:28px;color:var(--green);font-weight:500;margin-bottom:4px">-${weeklyLbs} lbs/week</div>
           <div style="font-size:12px;color:var(--green)">${Math.abs(weeklyDeficit).toLocaleString()} cal weekly deficit</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:6px">You're crushing it. Keep this up. 💪</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px">You're crushing it. Keep this up.</div>
         </div>`;
-    } else if (deficit < 0) {
+    } else {
       html += `
         <div style="margin-top:20px;padding:16px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:12px;animation:fadeIn 0.5s ease 0.6s both">
           <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Heads up — at this pace...</div>
-          <div style="font-family:'DM Mono',monospace;font-size:28px;color:var(--red);font-weight:500;margin-bottom:4px">+${Math.abs(weeklyLbs)} lbs/week</div>
+          <div style="font-family:'DM Mono',monospace;font-size:28px;color:var(--red);font-weight:500;margin-bottom:4px">+${weeklyLbs} lbs/week</div>
           <div style="font-size:12px;color:var(--red)">${Math.abs(weeklyDeficit).toLocaleString()} cal weekly surplus</div>
           <div style="font-size:11px;color:var(--muted);margin-top:6px">Tomorrow's a new day. Tighten up and bounce back.</div>
         </div>`;
     }
 
-    // Activity summary
-    html += `<div style="margin-top:12px;font-size:13px;color:var(--muted)">${activityStr}</div>`;
-
+    html += `<div style="margin-top:12px;font-size:13px;color:var(--muted)">${activities}</div>`;
     html += '</div>';
     statsEl.innerHTML = html;
   }
