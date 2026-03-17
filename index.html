@@ -1955,6 +1955,8 @@
       html += `<div class="plan-notes">${plan.notes}</div>`;
     }
 
+    const completed = cfg().plan_completed || {};
+
     plan.weeks.forEach(w => {
       const isCurrent = w.week === currentWeek;
       html += `<div class="plan-week ${isCurrent ? 'current' : ''}">
@@ -1962,16 +1964,34 @@
           <span class="plan-week-num">Week ${w.week}${isCurrent ? ' (Current)' : ''}</span>
           <span class="plan-week-label">${w.label}</span>
         </div>
-        ${w.runs.map(r => `<div class="plan-run">
-          <span class="plan-run-day">${r.day.slice(0,3)}</span>
-          <span class="plan-run-type">${r.type}</span>
-          <span class="plan-run-dist">${r.distance}</span>
-          <span class="plan-run-notes">${r.notes}</span>
-        </div>`).join('')}
+        ${w.runs.map(r => {
+          const key = 'w' + w.week + '-' + r.day.slice(0,3);
+          const done = completed[key];
+          return `<div class="plan-run" style="cursor:pointer;${done ? 'opacity:0.5' : ''}" onclick="togglePlanRun('${key}')">
+            <span style="width:22px;height:22px;border-radius:50%;border:2px solid ${done ? 'var(--green)' : 'var(--border)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;color:${done ? 'var(--green)' : 'transparent'};background:${done ? 'rgba(34,197,94,0.15)' : 'none'}">${done ? '&#10003;' : ''}</span>
+            <span class="plan-run-day">${r.day.slice(0,3)}</span>
+            <span class="plan-run-type" style="${done ? 'text-decoration:line-through' : ''}">${r.type}</span>
+            <span class="plan-run-dist">${r.distance}</span>
+            <span class="plan-run-notes">${r.notes}</span>
+          </div>`;
+        }).join('')}
       </div>`;
     });
 
     container.innerHTML = html;
+  }
+
+  async function togglePlanRun(key) {
+    const c = cfg();
+    if (!c.plan_completed) c.plan_completed = {};
+    c.plan_completed[key] = !c.plan_completed[key];
+    if (!c.plan_completed[key]) delete c.plan_completed[key];
+
+    // Save to Supabase
+    const { error } = await db.from('settings').update({ config: c }).eq('user_id', currentUser.id);
+    if (error) console.error('Save plan completion error:', error);
+
+    renderPlan();
   }
 
   // ==========================================
