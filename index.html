@@ -1994,7 +1994,7 @@
 
   async function saveDay() {
     const weightEl = document.getElementById('input-weight');
-    const weightVal = weightEl ? parseFloat(weightEl.value) || null : null;
+    const weightVal = weightEl ? (parseFloat(weightEl.value) || null) : (allLogs[currentDate]?.weight || null);
 
     const screenTimeEl = document.getElementById('input-screen-time');
     const screenTimeVal = screenTimeEl ? (parseInt(screenTimeEl.value) || null) : null;
