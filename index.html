@@ -2027,8 +2027,16 @@
   //  STATS
   // ==========================================
   function updateStats() {
-    const sorted = Object.values(allLogs).filter(l => l.weight).sort((a, b) => b.date.localeCompare(a.date));
-    const latest = sorted[0]?.weight;
+    // Show weight for current week, fall back to most recent weigh-in
+    const today = getUserDate();
+    const thisWeekSun = weekStart(today);
+    const thisWeekWeight = getWeekWeighIn(thisWeekSun);
+    let latest = thisWeekWeight?.weight;
+    if (!latest) {
+      // Fall back to most recent weigh-in
+      const sorted = Object.values(allLogs).filter(l => l.weight).sort((a, b) => b.date.localeCompare(a.date));
+      latest = sorted[0]?.weight;
+    }
     document.getElementById('stat-weight').textContent = latest ? latest.toFixed(1) : '--';
     document.getElementById('stat-lost').textContent = latest ? (getStartWeight() - latest).toFixed(1) : '--';
     document.getElementById('stat-togo').textContent = latest ? (latest - getGoalWeight()).toFixed(1) : '--';
@@ -2128,7 +2136,7 @@
     if (logs.length === 0) { list.innerHTML = '<div class="empty-state">No logs yet. Start tracking today!</div>'; return; }
     list.innerHTML = logs.map(log => {
       const score = calcScore(log);
-      return `<div class="history-card" onclick="showHistoryResults('${log.date}')">
+      return `<div class="history-card" onclick="jumpToDay('${log.date}')">
         <div><div class="history-score" style="color:${scoreColor(score)}">${score}</div><div class="history-score-label">Score</div></div>
         <div class="history-mid"><div class="history-date">${formatDate(log.date)}</div><div class="history-meta">${log.weight ? log.weight + ' lbs' : '--'} &middot; ${log.cal} cal &middot; ${log.protein}g</div></div>
         <div class="history-right"><div class="history-daytype">${log.day_type}</div><div class="history-workout" style="color:${log.workout_done ? 'var(--green)' : 'var(--muted)'}">${log.workout_done ? '&#10003; Done' : '&#10007; Skipped'}</div></div>
@@ -2404,7 +2412,15 @@
     const area = document.getElementById('close-day-area');
     if (!area) return;
     if (dayClosed) {
-      area.innerHTML = '<div style="text-align:center;padding:16px"><div style="color:var(--green);font-size:14px;font-weight:600">&#10003; Day logged and closed</div><div style="color:var(--muted);font-size:12px;margin-top:4px">Any edits made to this page will automatically save and stay in history</div></div>';
+      area.innerHTML = `<div style="text-align:center;padding:16px">
+        <div style="color:var(--green);font-size:14px;font-weight:600">&#10003; Day logged and closed</div>
+        <div style="color:var(--muted);font-size:12px;margin-top:4px">Any edits will automatically save</div>
+        <button onclick="showHistoryResults('${currentDate}')" style="
+          margin-top:12px; padding:10px 24px; border-radius:10px; border:1px solid var(--border);
+          background:var(--surface); color:#fff; font-family:'DM Sans',sans-serif;
+          font-size:14px; font-weight:600; cursor:pointer;
+        ">&#128200; View Results</button>
+      </div>`;
     } else {
       area.innerHTML = `<button id="close-day-btn" onclick="closeTheDay()" style="
         width:100%; padding:20px; border-radius:16px; border:2px solid var(--green);
