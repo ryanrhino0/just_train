@@ -175,9 +175,12 @@
     .weighin-badge { font-family: 'DM Mono', monospace; font-size: 12px; padding: 2px 8px; border-radius: 6px; background: rgba(255,255,255,0.05); }
 
     /* Date Picker */
-    .date-picker { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-    .date-picker input[type="date"] { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: #fff; font-family: 'DM Mono', monospace; font-size: 16px; padding: 12px; outline: none; }
+    .date-picker { display: flex; align-items: center; gap: 8px; margin: 12px 0 8px; }
+    .date-picker input[type="date"] { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: #fff; font-family: 'DM Mono', monospace; font-size: 16px; padding: 12px; outline: none; text-align: center; }
     .date-picker input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+    .date-arrow { width: 40px; height: 40px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); color: #fff; font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: border-color 0.2s; }
+    .date-arrow:active { border-color: var(--orange); }
+    .date-arrow.hidden { visibility: hidden; }
 
     /* Day Type Pills */
     .day-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
@@ -613,6 +616,11 @@
       <div class="stat"><div class="stat-value" id="stat-togo">--</div><div class="stat-label">To Go</div></div>
       <div class="stat"><div class="stat-value" id="stat-avg-cal">--</div><div class="stat-label">7d Avg Cal</div></div>
     </div>
+    <div class="date-picker">
+      <button class="date-arrow" id="date-prev" onclick="navigateDate(-1)">&#8249;</button>
+      <input type="date" id="selected-date">
+      <button class="date-arrow" id="date-next" onclick="navigateDate(1)">&#8250;</button>
+    </div>
     <div class="tabs">
       <button class="tab active" data-tab="today">Today</button>
       <button class="tab" data-tab="plan">Plan</button>
@@ -632,7 +640,6 @@
     <!-- Session Tracker -->
     <div class="session-tracker" id="session-tracker"></div>
 
-    <div class="date-picker"><input type="date" id="selected-date"></div>
     <div class="day-pills" id="day-pills"></div>
 
     <!-- Run summary (shows inline after logging) -->
@@ -1458,14 +1465,15 @@
     const startW = getStartWeight();
 
     if (isWeighDay && !hasWeighed) {
-      // Prompt for weigh-in
+      // It's weigh-in day — prompt to weigh in first thing
       const lastWeight = lastWeekLog ? lastWeekLog.weight : null;
       area.innerHTML = `
         <div class="weighin-prompt">
           <div class="weighin-header">
-            <span class="weighin-title">&#9878; Weekly Weigh-In</span>
+            <span class="weighin-title">&#9878; Time to Weigh In!</span>
             <span class="weighin-badge">${DAY_NAMES_FULL[weighDay]}</span>
           </div>
+          <div style="font-size:13px;color:var(--orange);margin-bottom:10px">Step on the scale first thing this morning</div>
           ${lastWeight ? `<div style="font-size:12px;color:var(--muted);margin-bottom:10px">Last week: ${lastWeight} lbs</div>` : ''}
           <div class="input-row">
             <input type="number" id="input-weight" placeholder="0" step="0.1" inputmode="decimal" style="font-size:24px">
@@ -1506,17 +1514,34 @@
           </div>
         </div>`;
     } else {
-      // Not weigh-in day, no weight this week yet
+      // Not weigh-in day yet, show last week's weight persistently
       const lastWeight = lastWeekLog ? lastWeekLog.weight : null;
-      area.innerHTML = `
-        <div class="weighin-done">
-          <div class="weighin-header">
-            <span class="card-title">Weekly Weigh-In</span>
-            <span class="weighin-badge">${DAY_NAMES_FULL[weighDay]}</span>
-          </div>
-          <div style="font-size:13px;color:var(--muted)">Next weigh-in on ${DAY_NAMES_FULL[weighDay]}</div>
-          ${lastWeight ? `<div style="font-size:12px;color:var(--muted);margin-top:4px">Last: ${lastWeight} lbs</div>` : ''}
-        </div>`;
+      if (lastWeight) {
+        const fromStart = lastWeight - startW;
+        const fromStartStr = (fromStart >= 0 ? '+' : '') + fromStart.toFixed(1);
+        const toGo = lastWeight - getGoalWeight();
+        area.innerHTML = `
+          <div class="weighin-done">
+            <div class="weighin-header">
+              <span class="card-title">Current Weight</span>
+              <span class="weighin-badge" style="color:${fromStart <= 0 ? 'var(--green)' : 'var(--red)'}">${fromStartStr} from start</span>
+            </div>
+            <div style="font-family:'DM Mono',monospace;font-size:28px;color:#fff">${lastWeight} <span style="font-size:14px;color:var(--muted)">lbs</span></div>
+            <div style="display:flex;gap:16px;margin-top:8px;font-size:12px">
+              <span style="color:var(--muted)">${toGo.toFixed(1)} lbs to goal</span>
+              <span style="color:var(--muted)">Next weigh-in ${DAY_NAMES_FULL[weighDay]}</span>
+            </div>
+          </div>`;
+      } else {
+        area.innerHTML = `
+          <div class="weighin-done">
+            <div class="weighin-header">
+              <span class="card-title">Weekly Weigh-In</span>
+              <span class="weighin-badge">${DAY_NAMES_FULL[weighDay]}</span>
+            </div>
+            <div style="font-size:13px;color:var(--muted)">Next weigh-in on ${DAY_NAMES_FULL[weighDay]}</div>
+          </div>`;
+      }
     }
   }
 
@@ -1551,7 +1576,28 @@
     input.value = currentDate;
     const clone = input.cloneNode(true);
     input.replaceWith(clone);
-    clone.addEventListener('change', () => { currentDate = clone.value; loadDay(currentDate); });
+    clone.addEventListener('change', () => { currentDate = clone.value; loadDay(currentDate); updateDateArrows(); });
+    updateDateArrows();
+  }
+
+  function navigateDate(offset) {
+    const d = new Date(currentDate + 'T12:00:00');
+    d.setDate(d.getDate() + offset);
+    const newDate = d.toISOString().split('T')[0];
+    const today = getUserDate();
+    if (newDate > today) return;
+    currentDate = newDate;
+    document.getElementById('selected-date').value = currentDate;
+    loadDay(currentDate);
+    updateDateArrows();
+  }
+
+  function updateDateArrows() {
+    const today = getUserDate();
+    const nextBtn = document.getElementById('date-next');
+    if (nextBtn) {
+      nextBtn.classList.toggle('hidden', currentDate >= today);
+    }
   }
 
   function setupPills() {
@@ -2082,7 +2128,7 @@
     if (logs.length === 0) { list.innerHTML = '<div class="empty-state">No logs yet. Start tracking today!</div>'; return; }
     list.innerHTML = logs.map(log => {
       const score = calcScore(log);
-      return `<div class="history-card" onclick="jumpToDay('${log.date}')">
+      return `<div class="history-card" onclick="showHistoryResults('${log.date}')">
         <div><div class="history-score" style="color:${scoreColor(score)}">${score}</div><div class="history-score-label">Score</div></div>
         <div class="history-mid"><div class="history-date">${formatDate(log.date)}</div><div class="history-meta">${log.weight ? log.weight + ' lbs' : '--'} &middot; ${log.cal} cal &middot; ${log.protein}g</div></div>
         <div class="history-right"><div class="history-daytype">${log.day_type}</div><div class="history-workout" style="color:${log.workout_done ? 'var(--green)' : 'var(--muted)'}">${log.workout_done ? '&#10003; Done' : '&#10007; Skipped'}</div></div>
@@ -2094,11 +2140,99 @@
     currentDate = dateStr;
     document.getElementById('selected-date').value = dateStr;
     loadDay(dateStr);
+    updateDateArrows();
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelector('[data-tab="today"]').classList.add('active');
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.getElementById('tab-today').classList.add('active');
     window.scrollTo(0, 0);
+  }
+
+  function showHistoryResults(dateStr) {
+    const log = allLogs[dateStr];
+    if (!log) return;
+
+    // Set currentDate so calendar renders for the right month
+    currentDate = dateStr;
+
+    const targets = getTargets();
+    const restCal = cfg().bmr || (targets['Rest'] || { cal: 1750 }).cal;
+
+    // Parse day types from log
+    const dayTypes = (log.day_type || 'Rest').split(/\s*\+\s*/);
+    const selected = dayTypes.filter(t => t !== 'Rest');
+    const runBurned = log.run_calories || 0;
+
+    let totalBurned = restCal;
+    selected.forEach(type => {
+      if (type === 'Run Day' || type === 'Long Run') {
+        totalBurned += runBurned > 0 ? runBurned : (ACTIVITY_BURN[type] || 0);
+      } else {
+        totalBurned += ACTIVITY_BURN[type] || 0;
+      }
+    });
+
+    const cal = log.cal || 0;
+    const protein = log.protein || 0;
+    const water = log.water || 0;
+
+    // Find target protein/water from the best matching day type
+    const DAY_TYPE_PRIORITY = ['Long Run','Run Day','Climb','Gym Lift','Pilates','Yoga','Rest'];
+    const best = DAY_TYPE_PRIORITY.find(t => dayTypes.includes(t)) || dayTypes[0];
+    const t = targets[best] || targets['Rest'] || { cal: 1750, protein: 190, water: 100 };
+    const targetProtein = t.protein || 190;
+    const targetWater = t.water || 100;
+
+    const deficit = totalBurned - cal;
+    const isDeficit = deficit > 0;
+    const deficitText = isDeficit ? `-${deficit.toLocaleString()}` : `+${Math.abs(deficit).toLocaleString()}`;
+    const deficitLabel = isDeficit ? 'calorie deficit' : 'calorie surplus';
+    const activities = selected.length ? selected.join(' + ') : 'Rest Day';
+    const proteinPct = targetProtein ? Math.round((protein / targetProtein) * 100) : 0;
+    const waterPct = targetWater ? Math.round((water / targetWater) * 100) : 0;
+
+    let html = '<div class="celeb-stats">';
+    html += `<div class="celeb-deficit ${isDeficit ? '' : 'over'}">${deficitText}</div>`;
+    html += `<div class="celeb-deficit-label">${deficitLabel}</div>`;
+    html += `<div style="font-size:12px;color:var(--muted);margin-bottom:16px">${totalBurned.toLocaleString()} burned (${restCal} base${selected.length ? ' + ' + (totalBurned - restCal) + ' activity' : ''}) &minus; ${cal.toLocaleString()} eaten</div>`;
+
+    html += '<div class="celeb-stat-row">';
+    html += `<div class="celeb-stat-item"><div class="celeb-stat-val">${cal.toLocaleString()}</div><div class="celeb-stat-lbl">Eaten</div></div>`;
+    html += `<div class="celeb-stat-item"><div class="celeb-stat-val" style="color:var(--orange)">${totalBurned.toLocaleString()}</div><div class="celeb-stat-lbl">Burned</div></div>`;
+    html += `<div class="celeb-stat-item"><div class="celeb-stat-val" style="color:${proteinPct >= 80 ? 'var(--green)' : proteinPct >= 50 ? 'var(--amber)' : 'var(--red)'}">${proteinPct}%</div><div class="celeb-stat-lbl">Protein</div></div>`;
+    html += `<div class="celeb-stat-item"><div class="celeb-stat-val" style="color:${waterPct >= 80 ? 'var(--green)' : waterPct >= 50 ? 'var(--amber)' : 'var(--red)'}">${waterPct}%</div><div class="celeb-stat-lbl">Water</div></div>`;
+    html += '</div>';
+
+    const weeklyDeficit = deficit * 7;
+    const weeklyLbs = (Math.abs(weeklyDeficit) / 3500).toFixed(2);
+
+    if (isDeficit) {
+      html += `
+        <div style="margin-top:20px;padding:16px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:12px">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:6px">If every day looked like this...</div>
+          <div style="font-family:'DM Mono',monospace;font-size:28px;color:var(--green);font-weight:500;margin-bottom:4px">-${weeklyLbs} lbs/week</div>
+          <div style="font-size:12px;color:var(--green)">${Math.abs(weeklyDeficit).toLocaleString()} cal weekly deficit</div>
+        </div>`;
+    } else {
+      html += `
+        <div style="margin-top:20px;padding:16px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:12px">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:6px">On this day...</div>
+          <div style="font-family:'DM Mono',monospace;font-size:28px;color:var(--red);font-weight:500;margin-bottom:4px">+${weeklyLbs} lbs/week</div>
+          <div style="font-size:12px;color:var(--red)">${Math.abs(weeklyDeficit).toLocaleString()} cal weekly surplus</div>
+        </div>`;
+    }
+
+    html += `<div style="margin-top:12px;font-size:13px;color:var(--muted)">${activities}</div>`;
+    html += '</div>';
+
+    // Show the overlay
+    const underBudget = cal <= (t.cal || 1750);
+    document.getElementById('celebration-text').textContent = formatDate(dateStr);
+    document.getElementById('celebration-check').innerHTML = '&#128200;';
+    document.getElementById('celebration-check').style.background = underBudget ? 'var(--green)' : 'var(--amber)';
+    document.getElementById('celebration-stats').innerHTML = html;
+    renderCelebrationCalendar();
+    document.getElementById('celebration-overlay').classList.add('active');
   }
 
   // ==========================================
