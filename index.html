@@ -722,7 +722,10 @@
     <div class="celebration-text" id="celebration-text">Day Complete!</div>
     <div id="celebration-stats"></div>
     <div class="celebration-calendar" id="celebration-calendar"></div>
-    <button class="ob-btn ob-btn-next" onclick="closeCelebration()" style="margin-top:24px;max-width:200px">Done</button>
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:24px">
+      <button class="ob-btn ob-btn-next" onclick="closeCelebration()" style="max-width:160px">Done</button>
+      <button class="ob-btn" id="celeb-edit-btn" onclick="editFromResults()" style="max-width:160px;background:var(--surface);border:1px solid var(--border);color:#fff;display:none">Edit Day</button>
+    </div>
   </div>
 </div>
 
@@ -2136,7 +2139,7 @@
     if (logs.length === 0) { list.innerHTML = '<div class="empty-state">No logs yet. Start tracking today!</div>'; return; }
     list.innerHTML = logs.map(log => {
       const score = calcScore(log);
-      return `<div class="history-card" onclick="jumpToDay('${log.date}')">
+      return `<div class="history-card" onclick="showHistoryResults('${log.date}')">
         <div><div class="history-score" style="color:${scoreColor(score)}">${score}</div><div class="history-score-label">Score</div></div>
         <div class="history-mid"><div class="history-date">${formatDate(log.date)}</div><div class="history-meta">${log.weight ? log.weight + ' lbs' : '--'} &middot; ${log.cal} cal &middot; ${log.protein}g</div></div>
         <div class="history-right"><div class="history-daytype">${log.day_type}</div><div class="history-workout" style="color:${log.workout_done ? 'var(--green)' : 'var(--muted)'}">${log.workout_done ? '&#10003; Done' : '&#10007; Skipped'}</div></div>
@@ -2240,7 +2243,15 @@
     document.getElementById('celebration-check').style.background = underBudget ? 'var(--green)' : 'var(--amber)';
     document.getElementById('celebration-stats').innerHTML = html;
     renderCelebrationCalendar();
+    document.getElementById('celeb-edit-btn').style.display = '';
+    document.getElementById('celeb-edit-btn').setAttribute('data-date', dateStr);
     document.getElementById('celebration-overlay').classList.add('active');
+  }
+
+  function editFromResults() {
+    const dateStr = document.getElementById('celeb-edit-btn').getAttribute('data-date');
+    closeCelebration();
+    if (dateStr) jumpToDay(dateStr);
   }
 
   // ==========================================
@@ -2439,7 +2450,8 @@
     dayClosed = true;
     saveDay();
     renderCloseDayButton();
-    // Show celebration
+    // Show celebration (hide edit button since we're already on the Today tab)
+    document.getElementById('celeb-edit-btn').style.display = 'none';
     document.getElementById('celebration-overlay').classList.add('active');
     // Check if under budget for confetti intensity
     const todayCal = parseInt(document.getElementById('input-cal').value) || 0;
