@@ -1450,6 +1450,31 @@
     const goals = cfg().goals || [];
     if (!goals.includes('weight_loss')) { area.innerHTML = ''; return; }
 
+    // Check if user has EVER weighed in
+    const allWeighIns = getAllWeighIns();
+    if (allWeighIns.length === 0) {
+      const weighDay = getWeighInDay();
+      area.innerHTML = `
+        <div class="weighin-prompt">
+          <div class="weighin-header">
+            <span class="weighin-title">&#9878; Welcome! Let's get your weight</span>
+          </div>
+          <div style="font-size:13px;color:var(--orange);margin-bottom:14px">You haven't weighed in yet! Enter your current weight and pick your weekly weigh-in day.</div>
+          <div class="ob-field" style="margin-bottom:14px">
+            <label class="ob-label">Weigh-In Day</label>
+            <select class="ob-select" id="first-weighin-day" style="font-size:14px;padding:10px">
+              ${DAY_NAMES_FULL.map((name, i) => `<option value="${i}" ${i === weighDay ? 'selected' : ''}>${name}</option>`).join('')}
+            </select>
+          </div>
+          <div class="input-row" style="margin-bottom:12px">
+            <input type="number" id="first-weighin-weight" placeholder="0" step="0.1" inputmode="decimal" style="font-size:24px">
+            <span class="input-unit">lbs</span>
+          </div>
+          <button class="ob-btn ob-btn-next" onclick="saveFirstWeighIn()" style="width:100%">Save Weigh-In</button>
+        </div>`;
+      return;
+    }
+
     const today = getUserDate();
     const todayDay = dayOfWeek(today);
     const weighDay = getWeighInDay();
@@ -1547,6 +1572,39 @@
           </div>`;
       }
     }
+  }
+
+  async function saveFirstWeighIn() {
+    const weight = parseFloat(document.getElementById('first-weighin-weight').value);
+    if (!weight || isNaN(weight)) { alert('Please enter your weight'); return; }
+
+    const newDay = parseInt(document.getElementById('first-weighin-day').value);
+
+    // Update weigh-in day in settings
+    const c = cfg();
+    c.weighin_day = newDay;
+    await db.from('settings').update({ config: c }).eq('user_id', currentUser.id);
+
+    // Save weight to today's log
+    const today = getUserDate();
+    const existing = allLogs[today] || {};
+    const row = {
+      date: today, user_id: currentUser.id,
+      cal: existing.cal || 0, protein: existing.protein || 0, water: existing.water || 0,
+      weight: weight,
+      day_type: existing.day_type || getSelectedDayTypes().join(', '),
+      workout_done: existing.workout_done || false,
+      notes: existing.notes || null,
+      screen_time: existing.screen_time || null,
+      run_calories: existing.run_calories || null,
+      run_confirmed: existing.run_confirmed || null,
+      day_closed: existing.day_closed || false,
+    };
+    await db.from('logs').upsert(row, { onConflict: 'user_id,date' });
+    allLogs[today] = { ...existing, ...row };
+
+    updateStats();
+    renderWeighIn();
   }
 
   function updateWeightDelta() {
