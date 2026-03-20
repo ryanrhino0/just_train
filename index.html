@@ -610,16 +610,16 @@
       </div>
       <div class="header-settings" onclick="openSettings()">&#9881;</div>
     </div>
+    <div class="date-picker">
+      <button class="date-arrow" id="date-prev" onclick="navigateDate(-1)">&#8249;</button>
+      <input type="date" id="selected-date">
+      <button class="date-arrow" id="date-next" onclick="navigateDate(1)">&#8250;</button>
+    </div>
     <div class="stats-bar">
       <div class="stat"><div class="stat-value" id="stat-weight">--</div><div class="stat-label">Weight</div></div>
       <div class="stat"><div class="stat-value" id="stat-lost">--</div><div class="stat-label">Lost</div></div>
       <div class="stat"><div class="stat-value" id="stat-togo">--</div><div class="stat-label">To Go</div></div>
       <div class="stat"><div class="stat-value" id="stat-avg-cal">--</div><div class="stat-label">7d Avg Cal</div></div>
-    </div>
-    <div class="date-picker">
-      <button class="date-arrow" id="date-prev" onclick="navigateDate(-1)">&#8249;</button>
-      <input type="date" id="selected-date">
-      <button class="date-arrow" id="date-next" onclick="navigateDate(1)">&#8250;</button>
     </div>
     <div class="tabs">
       <button class="tab active" data-tab="today">Today</button>
