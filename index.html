@@ -204,7 +204,18 @@
     .progress-bar { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
     .progress-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease; max-width: 100%; }
 
-    /* Workout Toggle */
+    /* Toggle Cards Row */
+    .toggle-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    
+    /* Workout & Steps Toggle */
+    .toggle-card { cursor: pointer; transition: border-color 0.2s; user-select: none; }
+    .toggle-card.done { border-color: var(--green); }
+    .toggle-inner { display: flex; align-items: center; gap: 10px; }
+    .toggle-check { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; font-size: 14px; }
+    .toggle-card.done .toggle-check { background: var(--green); border-color: var(--green); }
+    .toggle-label { font-size: 13px; font-weight: 600; }
+    
+    /* Legacy support */
     .workout-card { cursor: pointer; transition: border-color 0.2s; user-select: none; }
     .workout-card.done { border-color: var(--green); }
     .workout-inner { display: flex; align-items: center; gap: 12px; }
@@ -666,8 +677,13 @@
       <div class="input-row"><input type="number" id="input-screen-time" placeholder="0" inputmode="numeric"><span class="input-unit">min</span></div>
       <div class="progress-wrap"><div class="progress-bar"><div class="progress-fill" id="screen-time-progress" style="width:0%;background:var(--green)"></div></div></div>
     </div>
-    <div class="card workout-card" id="workout-card" onclick="toggleWorkout()">
-      <div class="workout-inner"><div class="workout-check" id="workout-check"></div><span class="workout-label">Workout Completed</span></div>
+    <div class="toggle-row">
+      <div class="card toggle-card" id="workout-card" onclick="toggleWorkout()">
+        <div class="toggle-inner"><div class="toggle-check" id="workout-check"></div><span class="toggle-label">Workout Done</span></div>
+      </div>
+      <div class="card toggle-card" id="steps-card" onclick="toggleSteps()">
+        <div class="toggle-inner"><div class="toggle-check" id="steps-check"></div><span class="toggle-label">10K Steps</span></div>
+      </div>
     </div>
     <div class="card"><div class="card-header"><span class="card-title">Notes</span></div><textarea id="input-notes" placeholder="Energy, food, sleep..."></textarea></div>
     <div class="card">
@@ -773,6 +789,7 @@
   let allLogs = {};
   let currentDate = todayStr();
   let workoutDone = false;
+  let stepsDone = false;
   let dayClosed = false;
   let saveTimer = null;
   let obStep = 0;
@@ -1735,32 +1752,35 @@
     const targets = getTargets();
     const restTargets = targets['Rest'] || { cal: 1750, protein: 190, water: 100 };
 
-    if (selected.length === 0 || (selected.length === 1 && selected[0] === 'Rest')) {
-      updateTargetValues(restTargets.cal, restTargets.protein, restTargets.water);
-      return;
-    }
-
     let totalCal = restTargets.cal;
     let maxProtein = restTargets.protein;
     let maxWater = restTargets.water;
 
-    selected.filter(t => t !== 'Rest').forEach(type => {
-      const t = targets[type];
-      if (t && t.protein > maxProtein) maxProtein = t.protein;
-      if (t && t.water > maxWater) maxWater = t.water;
+    // Add activity burn bonuses
+    if (!(selected.length === 0 || (selected.length === 1 && selected[0] === 'Rest'))) {
+      selected.filter(t => t !== 'Rest').forEach(type => {
+        const t = targets[type];
+        if (t && t.protein > maxProtein) maxProtein = t.protein;
+        if (t && t.water > maxWater) maxWater = t.water;
 
-      let burn = ACTIVITY_BURN[type] || 300;
+        let burn = ACTIVITY_BURN[type] || 300;
 
-      // For run types, use actual entered calories burned
-      if (type === 'Long Run' || type === 'Run Day') {
-        const runCalInput = document.getElementById('input-run-calories');
-        const actualBurn = runCalInput ? (parseInt(runCalInput.value) || 0) : 0;
-        if (actualBurn > 0) burn = actualBurn;
-      }
+        // For run types, use actual entered calories burned
+        if (type === 'Long Run' || type === 'Run Day') {
+          const runCalInput = document.getElementById('input-run-calories');
+          const actualBurn = runCalInput ? (parseInt(runCalInput.value) || 0) : 0;
+          if (actualBurn > 0) burn = actualBurn;
+        }
 
-      // Add 25% of burn to budget (maintains deficit while fueling recovery)
-      totalCal += Math.round(burn * 0.45);
-    });
+        // Add 45% of burn to budget (maintains deficit while fueling recovery)
+        totalCal += Math.round(burn * 0.45);
+      });
+    }
+
+    // 10K steps bonus: 300 cal burn × 0.45 = 135 cal added to budget
+    if (stepsDone) {
+      totalCal += Math.round(300 * 0.45);
+    }
 
     updateTargetValues(totalCal, maxProtein, maxWater);
   }
@@ -1796,8 +1816,10 @@
     document.getElementById('input-water').value = log?.water ?? '';
     document.getElementById('input-notes').value = log?.notes ?? '';
     workoutDone = log?.workout_done ?? false;
+    stepsDone = log?.steps_done ?? false;
     dayClosed = log?.day_closed ?? false;
     updateWorkoutUI();
+    updateStepsUI();
     updateProgressBars();
 
     // Screen time
@@ -1834,12 +1856,18 @@
   }
 
   // ==========================================
-  //  WORKOUT
+  //  WORKOUT & STEPS
   // ==========================================
   function toggleWorkout() { workoutDone = !workoutDone; updateWorkoutUI(); scheduleSave(); }
   function updateWorkoutUI() {
     document.getElementById('workout-card').classList.toggle('done', workoutDone);
     document.getElementById('workout-check').innerHTML = workoutDone ? '&#10003;' : '';
+  }
+  
+  function toggleSteps() { stepsDone = !stepsDone; updateStepsUI(); updateTargetsFromSelected(); scheduleSave(); }
+  function updateStepsUI() {
+    document.getElementById('steps-card').classList.toggle('done', stepsDone);
+    document.getElementById('steps-check').innerHTML = stepsDone ? '&#10003;' : '';
   }
 
   // ==========================================
@@ -2068,6 +2096,7 @@
       weight: weightVal,
       day_type: getSelectedDayTypes().join(', '),
       workout_done: workoutDone,
+      steps_done: stepsDone,
       notes: document.getElementById('input-notes').value || null,
       screen_time: screenTimeVal,
       run_calories: runCals,
